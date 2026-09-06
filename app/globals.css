@@ -135,3 +135,34 @@
     @apply font-sans;
   }
 }
+
+/*
+ * `MotionProvider` (providers/MotionProvider.tsx) already makes every
+ * `motion.*` element respect `prefers-reduced-motion` — but Dialog, Sheet,
+ * DropdownMenu, Select and Tooltip animate open/close with plain CSS
+ * (tw-animate-css's `animate-in`/`animate-out` utilities), which has no
+ * built-in reduced-motion guard of its own. This is the CSS-side equivalent:
+ * it collapses those transitions and animations to effectively instant.
+ *
+ * Loading indicators are the deliberate exception. `animate-spin` and
+ * `animate-pulse` convey "still working" — freezing them under reduced
+ * motion wouldn't reduce discomfort (a slow rotation isn't the kind of
+ * large-scale motion this preference targets), it would just make a loading
+ * state look stuck.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin,
+  .animate-pulse {
+    animation-duration: revert !important;
+    animation-iteration-count: revert !important;
+  }
+}
