@@ -77,3 +77,53 @@ audit` reports no known vulnerabilities.
 
 `pnpm lint`, `pnpm typecheck`, `pnpm build` all pass after every change in
 this phase.
+
+## Performance audit — Phase 18
+
+Scope: bundle size, rendering/re-renders, dynamic imports, lazy loading,
+images, fonts.
+
+### Fixed
+
+- **`Toaster` (Sonner) was in every route's initial bundle, always, even
+  though it renders nothing until a toast actually fires.** Mounted at the
+  provider level, so both `/` and `/dashboard` paid for it upfront. Switched
+  to `next/dynamic` with `ssr: false` in `providers/AppProviders.tsx` — safe
+  here specifically because nothing calls a hook that needs the Toaster's
+  context synchronously; it's an imperative `toast()` call that works fine
+  whenever the chunk finishes loading, which in practice is almost
+  immediately, in the background, never blocking first paint.
+
+  Measured directly by diffing the actual shipped chunk sets before/after
+  (same methodology as Phase 10 — not estimated):
+  - `/`: 700,431 → 667,495 bytes (**-32,936 bytes**)
+  - `/dashboard`: 1,048,362 → 1,015,916 bytes (**-32,446 bytes**)
+
+  Verified functionally, not just by bundle size: confirmed the Toaster's
+  accessible container still mounts correctly in the DOM after the change,
+  and checked the console for errors — clean.
+
+### Confirmed already optimal — no changes needed
+
+- **Fonts**: Geist/Geist Mono via `next/font/google` are variable fonts
+  (one file serves every weight — specifying `weight` would only matter for
+  static, non-variable families), scoped to the `latin` subset only, using
+  the library's default `swap` display strategy. Nothing to trim.
+- **Images**: only `next/image` usage in the app (`next.svg`/`vercel.svg` on
+  the untouched boilerplate root page) is already optimized; no other
+  images exist to lazy-load.
+- **Motion/Base UI scoping** (the Phase 10 fix): re-verified still isolated
+  to the `(dashboard)` route only — its ~360KB of dashboard-unique chunks
+  never reach the root page's bundle.
+- **Re-renders**: Zustand selectors are still all scoped to individual
+  fields (`useUIStore((s) => s.sidebarCollapsed)`), not whole-store
+  destructuring. No memoization added — the component tree is small enough
+  that it isn't justified, and adding it without a measured need would be
+  the premature optimization this phase's brief warns against.
+- **`QueryProvider` was considered for the same dynamic-import treatment as
+  `Toaster` and deliberately rejected**: unlike an imperative `toast()`
+  call, a component calling `useQuery()` expects `QueryClientProvider`'s
+  context to exist synchronously on render. Deferring the provider risks a
+  "no QueryClientProvider found" error for any child that renders before the
+  dynamic chunk resolves — a real correctness risk for a small, uncertain
+  gain, since nothing currently uses `useQuery` anyway.
