@@ -43,8 +43,12 @@ export default function DashboardPage() {
     <PageContainer
       title="Dashboard"
       description="Design system showcase — replace with real page content."
+      size="lg"
     >
-      <div className="space-y-10">
+      {/* `@container` lets the grids below respond to the space actually left
+          by the sidebar, not just the viewport — a fixed `lg:` breakpoint
+          can't tell a collapsed sidebar from an expanded one. */}
+      <div className="@container space-y-10">
         <section className="space-y-4">
           <SectionHeader
             title="Overview"
@@ -56,7 +60,7 @@ export default function DashboardPage() {
               </Button>
             }
           />
-          <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StaggerContainer className="grid grid-cols-1 gap-4 @lg:grid-cols-2 @[68rem]:grid-cols-4">
             <SlideIn>
               <StatCard
                 label="Revenue"
@@ -130,7 +134,7 @@ export default function DashboardPage() {
             title="Widget states"
             description="DashboardCard resolves loading, error and empty automatically."
           />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 @lg:grid-cols-2 @[68rem]:grid-cols-4">
             <DashboardCard
               title="Team activity"
               description="Last 30 days"

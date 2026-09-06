@@ -110,7 +110,7 @@ export function AppHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 flex h-[calc(var(--app-header-height)+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 pt-[env(safe-area-inset-top)] supports-backdrop-filter:bg-background/75 supports-backdrop-filter:backdrop-blur sm:px-6",
+        "sticky top-0 z-30 flex h-[calc(var(--app-header-height)+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 pt-[env(safe-area-inset-top)] supports-backdrop-filter:bg-background/75 supports-backdrop-filter:backdrop-blur sm:px-6 lg:px-8",
         className
       )}
     >
