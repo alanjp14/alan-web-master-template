@@ -170,7 +170,7 @@ function SidebarNav({
   return (
     <TooltipProvider delay={0}>
       <nav
-        aria-label="Main"
+        aria-label="Main navigation"
         className="flex-1 overflow-y-auto overflow-x-hidden p-2"
       >
         <div className="flex flex-col gap-1">

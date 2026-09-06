@@ -38,7 +38,7 @@ export function MobileNavigation({
 
   return (
     <nav
-      aria-label="Primary"
+      aria-label="Main navigation"
       style={
         { "--app-mobile-nav-height": LAYOUT.mobileNavHeight } as CSSProperties
       }

@@ -45,9 +45,20 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+function CardTitle({
+  className,
+  as: Tag = "div",
+  ...props
+}: React.ComponentProps<"div"> & {
+  /**
+   * Render as a heading when this title takes the place of one in the page's
+   * outline (e.g. a dashboard widget's title). Defaults to `div` since `Card`
+   * is also used where the title is just a label, not a document heading.
+   */
+  as?: "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
+}) {
   return (
-    <div
+    <Tag
       data-slot="card-title"
       className={cn(
         "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",

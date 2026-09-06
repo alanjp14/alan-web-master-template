@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { cn } from "cn";
 
 import { AppHeader } from "@/components/layout/AppHeader";
+import { AppShellRoot } from "@/components/layout/AppShellRoot";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { LAYOUT } from "@/config/layout";
@@ -33,8 +34,9 @@ export interface DashboardLayoutProps {
  * pages, so the App Router keeps the shell mounted across navigations and the
  * sidebar state, scroll position and focus survive route changes.
  *
- * This is a server component; only the three chrome components that need
- * pathname or store access opt into the client bundle.
+ * This is a server component; only the chrome components that need pathname
+ * or store access — `AppHeader`, `AppSidebar`, `MobileNavigation` and
+ * `AppShellRoot` — opt into the client bundle.
  */
 export function DashboardLayout({
   children,
@@ -47,7 +49,7 @@ export function DashboardLayout({
   className,
 }: DashboardLayoutProps) {
   return (
-    <div
+    <AppShellRoot
       style={
         {
           "--app-header-height": LAYOUT.headerHeight,
@@ -82,6 +84,6 @@ export function DashboardLayout({
 
         <MobileNavigation items={mobileNavigationItems} />
       </div>
-    </div>
+    </AppShellRoot>
   );
 }
