@@ -433,4 +433,5 @@ prerender in production. Reproduce production issues with
 | [SECURITY.md](SECURITY.md)                   | Security headers, error-boundary hardening, audit findings      |
 | [docs/MONITORING.md](docs/MONITORING.md)     | Sentry, Clarity, Vercel Analytics — setup and verification      |
 | [docs/AUDIT.md](docs/AUDIT.md)               | Repository, performance and build-configuration audit history   |
+| [docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md) | Final production review — validation results, per-area findings, remaining risks |
 | [AGENTS.md](AGENTS.md)                       | Working with this repo's Next.js version                        |
