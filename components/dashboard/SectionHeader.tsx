@@ -2,6 +2,8 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "cn";
 
+import { IconBadge } from "@/components/dashboard/IconBadge";
+
 export interface SectionHeaderProps {
   title: ReactNode;
   description?: ReactNode;
@@ -36,11 +38,7 @@ export function SectionHeader({
       )}
     >
       <div className="flex min-w-0 items-start gap-3">
-        {Icon && (
-          <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-            <Icon className="size-4" aria-hidden="true" />
-          </span>
-        )}
+        {Icon && <IconBadge icon={Icon} size="default" className="mt-0.5" />}
         <div className="min-w-0 space-y-0.5">
           <Heading className="truncate text-lg font-semibold tracking-tight text-foreground">
             {title}

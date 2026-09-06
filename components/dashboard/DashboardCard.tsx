@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { EmptyState, type EmptyStateProps } from "@/components/dashboard/EmptyState";
 import { ErrorState } from "@/components/dashboard/ErrorState";
+import { IconBadge } from "@/components/dashboard/IconBadge";
 import { LoadingState } from "@/components/dashboard/LoadingState";
 
 function messageOf(error: unknown): string | undefined {
@@ -84,11 +85,7 @@ export function DashboardCard({
         <CardHeader>
           {title && (
             <CardTitle as="h3" className="flex items-center gap-2">
-              {Icon && (
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="size-4" aria-hidden="true" />
-                </span>
-              )}
+              {Icon && <IconBadge icon={Icon} />}
               <span className="min-w-0 truncate">{title}</span>
             </CardTitle>
           )}

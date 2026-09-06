@@ -1,6 +1,7 @@
 export { DashboardCard, type DashboardCardProps } from "./DashboardCard";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";
+export { IconBadge, type IconBadgeProps } from "./IconBadge";
 export { LoadingState, type LoadingStateProps } from "./LoadingState";
 export {
   MetricCard,

@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { IconBadge } from "@/components/dashboard/IconBadge";
 import { TrendIndicator, type Trend } from "@/components/dashboard/TrendIndicator";
 import { formatProgressPercent } from "@/lib/format";
 
@@ -77,11 +78,7 @@ export function MetricCard({
           <p className="truncate text-sm font-medium text-muted-foreground">
             {label}
           </p>
-          {Icon && (
-            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-              <Icon className="size-4" aria-hidden="true" />
-            </span>
-          )}
+          {Icon && <IconBadge icon={Icon} />}
         </div>
 
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
