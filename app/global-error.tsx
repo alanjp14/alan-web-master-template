@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Last-resort error boundary — only triggers when the root layout itself
@@ -21,7 +22,11 @@ export default function GlobalError({
   useEffect(() => {
     // A failure here means the root layout itself threw — the most
     // important place in the app to actually see this, not just swallow it.
+    // Sentry's own SDK doesn't depend on this app's providers/design-system
+    // chain (the thing this file otherwise deliberately avoids touching),
+    // so reporting here is safe even if that chain is what broke.
     console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   // See app/(dashboard)/error.tsx for why this doesn't just trust

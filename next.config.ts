@@ -11,12 +11,21 @@ const isDev = process.env.NODE_ENV === "development";
 // `'unsafe-eval'` is scoped to dev only: React uses it there to reconstruct
 // server error stacks in the browser; neither React nor Next use it in a
 // production build.
+//
+// `va.vercel-scripts.com` and `www.clarity.ms` are here for the monitoring
+// integrations in instrumentation-client.ts / app/layout.tsx (see
+// docs/MONITORING.md) — both load an external script and send data back to
+// it, so they need both script-src and connect-src. Sentry needs neither:
+// it's disabled with no DSN configured, and once one is, its ingest URL is
+// project-specific, so add it to connect-src yourself at that point (the
+// DSN's own host is the value to add).
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""};
+  script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://www.clarity.ms${isDev ? " 'unsafe-eval'" : ""};
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data:;
   font-src 'self';
+  connect-src 'self' https://va.vercel-scripts.com https://www.clarity.ms;
   object-src 'none';
   base-uri 'self';
   form-action 'self';

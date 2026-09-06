@@ -40,6 +40,9 @@ Other scripts: `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`.
   to Next's defaults.
 - **Theming** — green/white, WCAG AA-checked, light and dark (`next-themes`,
   toggle in the header). Tokens live in `app/globals.css`.
+- **Monitoring** — Sentry, Microsoft Clarity and Vercel Analytics are wired
+  in and safe to leave unconfigured (each no-ops until you set its env var —
+  see [docs/MONITORING.md](docs/MONITORING.md)).
 
 ## Before you ship
 

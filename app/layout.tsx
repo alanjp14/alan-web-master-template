@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
@@ -44,6 +45,10 @@ export default function RootLayout({
         <AppProviders>
           {children}
         </AppProviders>
+        {/* No-ops off Vercel or with Analytics not enabled for the project —
+            safe to ship unconditionally, unlike the env-var-gated
+            integrations in instrumentation-client.ts. */}
+        <Analytics />
       </body>
     </html>
   );

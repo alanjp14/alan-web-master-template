@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 import { ErrorState } from "@/components/dashboard";
 import { PageContainer } from "@/components/layout";
@@ -23,9 +24,13 @@ export default function DashboardError({
 }) {
   useEffect(() => {
     // Next.js's error overlay already shows this in dev; logging here is
-    // what ships to production, where a real app would forward it to its
-    // error-reporting service instead.
+    // what ships to production. `onRequestError` in instrumentation.ts
+    // already reports *server*-side errors to Sentry — this boundary can
+    // also catch a client-side rendering error, which that hook never sees,
+    // so it's reported here explicitly too. A no-op without a configured
+    // DSN, same as the rest of this template's Sentry wiring.
     console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   // Next.js already redacts a Server Component render error's `message` in
