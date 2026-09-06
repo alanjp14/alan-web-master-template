@@ -49,3 +49,10 @@ Other scripts: `pnpm build`, `pnpm lint`, `pnpm typecheck`.
   menu.
 - Replace `app/(dashboard)/dashboard/page.tsx`'s static demo data with a real
   data source.
+
+## Contributing
+
+Branch model, PR/merge/release workflow and commit conventions are in
+[CONTRIBUTING.md](CONTRIBUTING.md). Short version: branch from `develop` as
+`feature/<name>`, open a PR back into `develop`, and let CI
+(`.github/workflows/ci.yml`) validate it.
