@@ -73,7 +73,7 @@ function SidebarNavLink({
       className={cn(
         "flex h-9 items-center gap-3 rounded-md px-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors outline-none",
         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        "focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+        "focus-visible:ring-3 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
         active &&
           "bg-sidebar-accent font-semibold text-sidebar-accent-foreground",
         item.disabled && "pointer-events-none opacity-50",

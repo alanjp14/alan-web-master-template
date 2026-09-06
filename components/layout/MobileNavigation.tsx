@@ -13,7 +13,7 @@ import { useUIStore } from "@/stores/ui-store";
 import type { NavItem } from "@/types/navigation";
 
 const itemClasses =
-  "flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-[0.6875rem] font-medium text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset";
+  "flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-xs font-medium text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-inset";
 
 export interface MobileNavigationProps {
   /** Destinations to promote. Keep to four or fewer; a "More" control is added. */
