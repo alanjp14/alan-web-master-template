@@ -30,7 +30,7 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
   return (
     <div
       className={cn(
-        "flex h-(--app-header-height) shrink-0 items-center gap-2.5 border-b border-sidebar-border px-4",
+        "flex h-[calc(var(--app-header-height)+env(safe-area-inset-top))] shrink-0 items-center gap-2.5 border-b border-sidebar-border px-4 pt-[env(safe-area-inset-top)]",
         collapsed && "justify-center px-0"
       )}
     >
@@ -261,9 +261,13 @@ export function AppSidebar({
           // its links stay in the tab order and expose a second "Main" landmark
           // that no one can see.
           inert={!mobileNavOpen}
+          // The sheet is portaled to `document.body`, outside the layout div
+          // that sets `--app-header-height` — redeclare it here so
+          // `SidebarBrand`'s height reference resolves inside the drawer too.
           style={
             {
               "--app-mobile-sidebar-width": LAYOUT.mobileSidebarWidth,
+              "--app-header-height": LAYOUT.headerHeight,
             } as React.CSSProperties
           }
           className="gap-0 bg-sidebar p-0 text-sidebar-foreground data-[side=left]:w-(--app-mobile-sidebar-width) data-[side=left]:max-w-[85vw] lg:hidden data-[side=left]:sm:max-w-xs"
