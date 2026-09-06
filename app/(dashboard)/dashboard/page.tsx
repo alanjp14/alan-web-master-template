@@ -202,7 +202,7 @@ export default function DashboardPage() {
             description="Field pairs a label, description and validation message with any input."
             icon={ClipboardListIcon}
           />
-          <DashboardCard size="sm">
+          <DashboardCard size="sm" className="max-w-md">
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="demo-email">Email</FieldLabel>
