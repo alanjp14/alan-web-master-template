@@ -10,6 +10,7 @@ patterns, ready to build real product pages on top of.
 ## Table of contents
 
 - [Overview](#overview)
+- [Using this template](#using-this-template)
 - [Architecture](#architecture)
 - [Setup](#setup)
 - [Development](#development)
@@ -33,6 +34,14 @@ What it deliberately does **not** include: authentication, a database, real
 API integration, or business logic. Those are application concerns; see
 [Before you ship](#before-you-ship).
 
+The conventions the template already follows are documented as project
+standards so code added on top stays consistent with it:
+[folder](docs/standards/folder-standards.md),
+[coding](docs/standards/coding-standards.md),
+[component](docs/standards/component-standards.md), and
+[naming](docs/standards/naming-standards.md) standards
+([index](docs/standards/README.md)).
+
 ### Feature summary
 
 | Area           | What you get                                                                                 |
@@ -47,6 +56,33 @@ API integration, or business logic. Those are application concerns; see
 | Observability  | Sentry, Microsoft Clarity, Vercel Analytics — each a no-op until its env var is set          |
 | Security       | CSP + hardening headers in `next.config.ts`; see [SECURITY.md](SECURITY.md)                   |
 | CI             | `.github/workflows/ci.yml` runs lint + typecheck + test + build on every push/PR to `main` and `develop` |
+
+---
+
+## Using this template
+
+This repository is meant to be copied, not cloned-and-committed-into.
+
+On GitHub: **Use this template → Create a new repository**. From the CLI:
+
+```bash
+gh repo create my-app --template <owner>/alan-web-master-template --private
+cd my-app
+corepack enable
+pnpm install
+pnpm dev
+```
+
+Then:
+
+1. Read the [project standards](docs/standards/README.md) — folder, coding,
+   component, and naming conventions the template already follows.
+2. Work through [Before you ship](#before-you-ship): replace the placeholder
+   routes and the starter page, wire real data, add authentication.
+3. Update `config/app.ts`, `package.json` (`name`, `version`), this README's
+   title, and `LICENSE` (none is included — add one for your project).
+4. Keep `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`, and `docs/` — adapt
+   their contents to your project rather than deleting them.
 
 ---
 
@@ -198,17 +234,21 @@ never be left failing any of them.
 
 ### Conventions
 
-- **Components**: PascalCase files (`AppHeader.tsx`). shadcn primitives keep
-  their upstream kebab-case (`dropdown-menu.tsx`).
-- **Everything else** (`hooks/`, `lib/`, `config/`, `types/`, `stores/`):
-  kebab-case (`use-hydrated.ts`, `ui-store.ts`).
-- **Imports**: `@/*` is aliased to the repo root (`tsconfig.json`); Vitest
-  mirrors it.
-- **`cn` helper**: imported from the `cn` package directly
-  (`import { cn } from "cn"`). `lib/utils.ts` exists only as the re-export
-  the shadcn CLI config points at.
-- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) —
-  `type(scope): summary`. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Full detail in [docs/standards/](docs/standards/README.md). In short:
+
+- **Folders**: each top-level directory has one job; colocate until there's
+  a second consumer. [Folder standards](docs/standards/folder-standards.md).
+- **Code**: TypeScript `strict`, server components by default, semantic
+  design tokens only, per-field Zustand selectors, comment *why*.
+  [Coding standards](docs/standards/coding-standards.md).
+- **Components**: exported `<Name>Props` interface, `className?` last, JSDoc,
+  `cva` for variants, explicit loading/empty/error states, AA a11y.
+  [Component standards](docs/standards/component-standards.md).
+- **Naming**: PascalCase component files, kebab-case everywhere else,
+  `<Name>Props`, `is`/`has` booleans, Conventional Commits.
+  [Naming standards](docs/standards/naming-standards.md).
+- **Imports**: `@/*` is aliased to the repo root (`tsconfig.json`, mirrored
+  in Vitest). `cn` from the `cn` package directly.
 - **Branching**: branch from `develop` as `feature/<name>`, PR back into
   `develop`. Full branch model in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -388,6 +428,7 @@ prerender in production. Reproduce production issues with
 
 | Document                                     | Contents                                                        |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| [docs/standards/](docs/standards/README.md)  | Folder, coding, component and naming standards the template follows |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Branch model, PR / merge / release workflow, commit conventions |
 | [SECURITY.md](SECURITY.md)                   | Security headers, error-boundary hardening, audit findings      |
 | [docs/MONITORING.md](docs/MONITORING.md)     | Sentry, Clarity, Vercel Analytics — setup and verification      |
