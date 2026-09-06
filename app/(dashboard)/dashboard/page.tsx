@@ -15,6 +15,7 @@ import {
   StatCard,
 } from "@/components/dashboard";
 import { PageContainer } from "@/components/layout";
+import { FadeIn, SlideIn, StaggerContainer } from "@/components/motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,33 +56,41 @@ export default function DashboardPage() {
               </Button>
             }
           />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              label="Revenue"
-              value="$48,290"
-              icon={DollarSignIcon}
-              trend={{ value: 12.4, label: "vs last month" }}
-            />
-            <StatCard
-              label="Active users"
-              value="2,318"
-              icon={UsersIcon}
-              trend={{ value: -3.1, label: "vs last month" }}
-            />
-            <StatCard
-              label="Conversion rate"
-              value="4.6%"
-              icon={PercentIcon}
-              trend={{ value: 0 }}
-              description="Stable this week"
-            />
-            <StatCard
-              label="Avg. session"
-              value="6m 42s"
-              icon={ActivityIcon}
-              isLoading
-            />
-          </div>
+          <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <SlideIn>
+              <StatCard
+                label="Revenue"
+                value="$48,290"
+                icon={DollarSignIcon}
+                trend={{ value: 12.4, label: "vs last month" }}
+              />
+            </SlideIn>
+            <SlideIn>
+              <StatCard
+                label="Active users"
+                value="2,318"
+                icon={UsersIcon}
+                trend={{ value: -3.1, label: "vs last month" }}
+              />
+            </SlideIn>
+            <SlideIn>
+              <StatCard
+                label="Conversion rate"
+                value="4.6%"
+                icon={PercentIcon}
+                trend={{ value: 0 }}
+                description="Stable this week"
+              />
+            </SlideIn>
+            <SlideIn>
+              <StatCard
+                label="Avg. session"
+                value="6m 42s"
+                icon={ActivityIcon}
+                isLoading
+              />
+            </SlideIn>
+          </StaggerContainer>
         </section>
 
         <section className="space-y-4">
@@ -90,26 +99,30 @@ export default function DashboardPage() {
             description="Consumption against plan limits."
             icon={ServerIcon}
           />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <MetricCard
-              label="Storage"
-              value={72}
-              unit="GB"
-              icon={DatabaseIcon}
-              trend={{ value: 8.2, label: "vs last week" }}
-              progress={{ value: 72, max: 100, label: "72 of 100 GB used" }}
-            />
-            <MetricCard
-              label="API requests"
-              value="184K"
-              icon={ServerIcon}
-              progress={{
-                value: 184000,
-                max: 250000,
-                label: "184K of 250K this month",
-              }}
-            />
-          </div>
+          <StaggerContainer className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <FadeIn>
+              <MetricCard
+                label="Storage"
+                value={72}
+                unit="GB"
+                icon={DatabaseIcon}
+                trend={{ value: 8.2, label: "vs last week" }}
+                progress={{ value: 72, max: 100, label: "72 of 100 GB used" }}
+              />
+            </FadeIn>
+            <FadeIn>
+              <MetricCard
+                label="API requests"
+                value="184K"
+                icon={ServerIcon}
+                progress={{
+                  value: 184000,
+                  max: 250000,
+                  label: "184K of 250K this month",
+                }}
+              />
+            </FadeIn>
+          </StaggerContainer>
         </section>
 
         <section className="space-y-4">

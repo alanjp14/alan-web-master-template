@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "./ThemeProvider";
 import { QueryProvider } from "./QueryProvider";
+import { MotionProvider } from "./MotionProvider";
 
 export function AppProviders({
   children,
@@ -11,7 +12,7 @@ export function AppProviders({
   return (
     <ThemeProvider>
       <QueryProvider>
-        {children}
+        <MotionProvider>{children}</MotionProvider>
       </QueryProvider>
     </ThemeProvider>
   );
