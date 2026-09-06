@@ -16,7 +16,7 @@ Open [http://localhost:3000](http://localhost:3000). The showcase page lives
 at `/dashboard`; `/` is the untouched Next.js starter page and isn't part of
 the template — replace it or remove it once the app has a real landing page.
 
-Other scripts: `pnpm build`, `pnpm lint`, `pnpm typecheck`.
+Other scripts: `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`.
 
 ## What's here
 
