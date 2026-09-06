@@ -28,14 +28,21 @@ export default function DashboardError({
     console.error(error);
   }, [error]);
 
+  // Next.js already redacts a Server Component render error's `message` in
+  // production, replacing it with a generic one plus a `digest` for
+  // correlating with server logs. This doesn't rely on that alone: an error
+  // thrown from a Server Action or Route Handler in code built on this
+  // template could still carry something sensitive in its `message` (a
+  // connection string, an internal path). Showing the real message only in
+  // development is the explicit, defense-in-depth version of the same rule.
+  const description =
+    process.env.NODE_ENV === "development" && error.message
+      ? error.message
+      : "An unexpected error occurred. Please try again.";
+
   return (
     <PageContainer size="sm">
-      <ErrorState
-        description={
-          error.message || "An unexpected error occurred. Please try again."
-        }
-        onRetry={reset}
-      />
+      <ErrorState description={description} onRetry={reset} />
     </PageContainer>
   );
 }
