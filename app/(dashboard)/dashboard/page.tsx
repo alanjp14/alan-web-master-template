@@ -1,5 +1,6 @@
 import {
   ActivityIcon,
+  ClipboardListIcon,
   DatabaseIcon,
   DollarSignIcon,
   PercentIcon,
@@ -19,6 +20,14 @@ import { FadeIn, SlideIn, StaggerContainer } from "@/components/motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const recentSignups = [
   { name: "Amara Osei", role: "Admin" },
@@ -185,6 +194,42 @@ export default function DashboardPage() {
               </ul>
             </DashboardCard>
           </div>
+        </section>
+
+        <section className="space-y-4">
+          <SectionHeader
+            title="Form states"
+            description="Field pairs a label, description and validation message with any input."
+            icon={ClipboardListIcon}
+          />
+          <DashboardCard size="sm">
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="demo-email">Email</FieldLabel>
+                <Input
+                  id="demo-email"
+                  type="email"
+                  defaultValue="alan@example.com"
+                />
+                <FieldDescription>
+                  We&apos;ll only use this to send account notifications.
+                </FieldDescription>
+              </Field>
+
+              <Field data-invalid="true">
+                <FieldLabel htmlFor="demo-password">Password</FieldLabel>
+                <Input
+                  id="demo-password"
+                  type="password"
+                  defaultValue="1234"
+                  aria-invalid
+                />
+                <FieldError>
+                  Password must be at least 8 characters.
+                </FieldError>
+              </Field>
+            </FieldGroup>
+          </DashboardCard>
         </section>
       </div>
     </PageContainer>
