@@ -1,3 +1,4 @@
+export { BarList, type BarListProps, type BarListItem } from "./BarList";
 export { DashboardCard, type DashboardCardProps } from "./DashboardCard";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";
@@ -9,6 +10,7 @@ export {
   type MetricCardProgress,
 } from "./MetricCard";
 export { SectionHeader, type SectionHeaderProps } from "./SectionHeader";
+export { Sparkline, type SparklineProps } from "./Sparkline";
 export { StatCard, type StatCardProps } from "./StatCard";
 export { StateMessage, type StateMessageProps } from "./StateMessage";
 export {

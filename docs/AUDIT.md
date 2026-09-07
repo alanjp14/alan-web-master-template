@@ -127,3 +127,52 @@ images, fonts.
   "no QueryClientProvider found" error for any child that renders before the
   dynamic chunk resolves — a real correctness risk for a small, uncertain
   gain, since nothing currently uses `useQuery` anyway.
+
+## UI/UX enrichment — Phase 23
+
+Scope: fill the visual gaps a "master template" shouldn't ship with —
+the create-next-app root page, unused chart tokens, no data-viz in the
+"dashboard" design system, and nav links that 404.
+
+### Added
+
+- **Branded landing page** (`app/page.tsx`). Replaces the unmodified Next.js
+  starter with an on-brand hero + feature grid using the design tokens.
+  Server component with no `motion` import, keeping the root route's bundle
+  lean (the reason `MotionProvider` was scoped to `(dashboard)` in Phase 2
+  still holds).
+- **Data-viz primitives**: `Sparkline` and `BarList` in
+  `components/dashboard/`, plus their geometry in `lib/chart.ts` with
+  colocated unit tests (`lib/chart.test.ts`). Zero charting dependency — pure
+  SVG/markup, server renderable. `StatCard` gained a `chart` slot.
+- **Chart tokens rebranded**. `--chart-1..5` were five grayscale values,
+  identical in light and dark, consumed by nothing. Now a categorical
+  palette anchored on the brand green (`chart-1`), rotating hue far enough
+  for the common red/green CVD, tuned separately per theme. Target is WCAG
+  1.4.11's 3:1 for graphical objects, not text contrast.
+- **`PageContainer` breadcrumbs**. Optional `breadcrumbs` prop renders the
+  `breadcrumb` primitive — previously in the tree but imported nowhere.
+- **Two showcase routes**: `/analytics` (Sparkline / BarList / chart tokens)
+  and `/settings` (Tabs / Field / Switch / Textarea, with a `sonner` toast
+  on save — the Toaster was wired in Phase 8 but never demonstrated). Both
+  use `PageContainer` breadcrumbs.
+- **`metadata` title template** in `app/layout.tsx` (`%s · Alan Web Master
+  Template`); each route sets a bare `title`.
+
+### Fixed in passing
+
+- `components/ui/breadcrumb.tsx` was missing `"use client"` despite calling
+  `useRender` — latent, since nothing imported it. Added.
+- Sidebar nav pointed `/users` and `/settings` at the branded 404;
+  `app/page.tsx` was the starter. Nav now lists Dashboard / Analytics /
+  Settings, all real. The account menu's "Profile" and "Settings" items both
+  resolve to `/settings` (its first tab is the profile) instead of a dead
+  `/profile`.
+
+### Verified
+
+`pnpm lint`, `pnpm typecheck`, `pnpm test` (31 pass), `pnpm build` (7 routes,
+all static-prerendered) all green. Every new page checked live in the
+browser in light and dark: sparklines auto-color by trend direction, BarList
+values render as text for screen readers, breadcrumbs and the settings toast
+work, no console errors.

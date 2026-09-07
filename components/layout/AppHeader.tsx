@@ -63,7 +63,9 @@ function UserMenu({ user }: { user: AppUser }) {
           )}
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/profile" />}>
+        {/* Both land on /settings — its first tab is the profile. Split them
+            once a consuming app has a dedicated profile route. */}
+        <DropdownMenuItem render={<Link href="/settings" />}>
           <UserIcon aria-hidden="true" />
           Profile
         </DropdownMenuItem>

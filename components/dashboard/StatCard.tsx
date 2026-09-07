@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "cn";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,8 @@ export interface StatCardProps {
   trend?: Trend;
   /** Footnote shown when there's no `trend`, or alongside one without its own `label`. */
   description?: string;
+  /** Visual sitting below the value — typically a `<Sparkline />`. */
+  chart?: ReactNode;
   isLoading?: boolean;
   size?: "default" | "sm";
   className?: string;
@@ -29,6 +32,7 @@ export function StatCard({
   icon: Icon,
   trend,
   description,
+  chart,
   isLoading = false,
   size = "default",
   className,
@@ -45,6 +49,7 @@ export function StatCard({
             <Skeleton className={cn("h-7", size === "sm" ? "w-16" : "w-20")} />
             <Skeleton className="h-4 w-28" />
           </div>
+          {chart && <Skeleton className="h-8 w-full" />}
         </CardContent>
       </Card>
     );
@@ -80,6 +85,8 @@ export function StatCard({
             </div>
           )}
         </div>
+
+        {chart && <div className="mt-3">{chart}</div>}
       </CardContent>
     </Card>
   );

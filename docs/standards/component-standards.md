@@ -128,6 +128,23 @@ must not regress that.
 - No fixed colors, no `style` attribute except for dynamic custom-property
   values.
 
+## Data visualization
+
+- No charting library. `Sparkline` and `BarList` are pure SVG/markup over
+  geometry helpers in `lib/chart.ts` (unit-tested there, per the
+  [folder standards](folder-standards.md#lib)). Add new chart types the same
+  way — logic in `lib/`, a thin server-renderable component on top — before
+  reaching for a dependency.
+- Series colors come from the `--chart-1`…`--chart-5` tokens (a categorical
+  palette, `chart-1` = brand green) or the semantic `primary` / `destructive`
+  / `muted-foreground` tokens. Never a literal color.
+- A chart that stands in for a number must be reachable without it: give it
+  `role="img"` + a descriptive `aria-label`, or render the same values as
+  text beside it (`BarList` does the latter). A purely decorative sparkline
+  sitting next to its own figure is `aria-hidden`.
+- Charts are composed in, not configured: `StatCard` takes a `chart`
+  `ReactNode` slot rather than sprouting `sparklineData` props.
+
 ## Client/server boundary
 
 - A component is a server component unless it needs client features.

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   ActivityIcon,
   ClipboardListIcon,
@@ -10,9 +11,11 @@ import {
 import Link from "next/link";
 
 import {
+  BarList,
   DashboardCard,
   MetricCard,
   SectionHeader,
+  Sparkline,
   StatCard,
 } from "@/components/dashboard";
 import { PageContainer } from "@/components/layout";
@@ -29,10 +32,26 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Design system showcase for the dashboard components.",
+};
+
 const recentSignups = [
   { name: "Amara Osei", role: "Admin" },
   { name: "Diego Ramirez", role: "Member" },
   { name: "Priya Nair", role: "Member" },
+];
+
+const revenueTrend = [31, 33, 32, 36, 38, 37, 41, 44, 43, 48];
+const usersTrend = [2510, 2480, 2440, 2460, 2410, 2390, 2360, 2340, 2330, 2318];
+
+const trafficSources = [
+  { label: "Organic search", value: 4820 },
+  { label: "Direct", value: 3110 },
+  { label: "Referral", value: 1980 },
+  { label: "Social", value: 1240 },
+  { label: "Email", value: 640 },
 ];
 
 function initialsOf(name: string): string {
@@ -76,6 +95,12 @@ export default function DashboardPage() {
                 value="$48,290"
                 icon={DollarSignIcon}
                 trend={{ value: 12.4, label: "vs last month" }}
+                chart={
+                  <Sparkline
+                    data={revenueTrend}
+                    label="Revenue trending up over ten months"
+                  />
+                }
               />
             </SlideIn>
             <SlideIn>
@@ -84,6 +109,12 @@ export default function DashboardPage() {
                 value="2,318"
                 icon={UsersIcon}
                 trend={{ value: -3.1, label: "vs last month" }}
+                chart={
+                  <Sparkline
+                    data={usersTrend}
+                    label="Active users trending down over ten months"
+                  />
+                }
               />
             </SlideIn>
             <SlideIn>
@@ -136,6 +167,39 @@ export default function DashboardPage() {
               />
             </FadeIn>
           </StaggerContainer>
+        </section>
+
+        <section className="space-y-4">
+          <SectionHeader
+            title="Breakdowns"
+            description="Sparkline and BarList — zero-dependency, server-rendered."
+            icon={PercentIcon}
+          />
+          <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-2">
+            <FadeIn>
+              <DashboardCard
+                title="Traffic sources"
+                description="Sessions this month"
+              >
+                <BarList data={trafficSources} maxItems={5} />
+              </DashboardCard>
+            </FadeIn>
+            <FadeIn>
+              <DashboardCard title="Revenue" description="Last ten months">
+                <div className="flex h-full flex-col justify-between gap-4">
+                  <p className="text-2xl font-semibold tracking-tight">
+                    $48,290
+                  </p>
+                  <Sparkline
+                    data={revenueTrend}
+                    variant="area"
+                    className="h-24"
+                    label="Revenue trending up over ten months"
+                  />
+                </div>
+              </DashboardCard>
+            </FadeIn>
+          </div>
         </section>
 
         <section className="space-y-4">

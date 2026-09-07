@@ -8,5 +8,9 @@ export {
   MobileNavigation,
   type MobileNavigationProps,
 } from "./MobileNavigation";
-export { PageContainer, type PageContainerProps } from "./PageContainer";
+export {
+  PageContainer,
+  type PageContainerProps,
+  type PageCrumb,
+} from "./PageContainer";
 export { ThemeToggle } from "./ThemeToggle";

@@ -17,7 +17,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Alan Web Master Template",
+  // Pages set a bare `title` (e.g. "Analytics"); the template appends the app
+  // name. `default` covers routes that set none.
+  title: {
+    default: "Alan Web Master Template",
+    template: "%s · Alan Web Master Template",
+  },
   description: "Enterprise Web Application Template",
 };
 

@@ -43,7 +43,7 @@ Reusable components, grouped by domain. Current groups:
 | ----------------------- | --------------------------------------------------------------------- |
 | `components/ui/`         | Low-level primitives — shadcn components built on Base UI. Kebab-case files matching upstream. Generated/updated via the shadcn CLI. |
 | `components/layout/`     | Application shell: `DashboardLayout`, sidebar, header, mobile nav, `PageContainer`, `ThemeToggle`. |
-| `components/dashboard/`  | Data-display building blocks: `StatCard`, `MetricCard`, `DashboardCard`, `SectionHeader`, state components, `IconBadge`, `TrendIndicator`. |
+| `components/dashboard/`  | Data-display building blocks: `StatCard`, `MetricCard`, `DashboardCard`, `SectionHeader`, `Sparkline`, `BarList`, state components, `IconBadge`, `TrendIndicator`. |
 | `components/motion/`     | Animation primitives (`FadeIn`, `SlideIn`, …) wrapping `motion`.       |
 
 Add a new group directory when a cohesive set of 3+ components shares a

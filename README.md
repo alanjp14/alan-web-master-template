@@ -46,8 +46,10 @@ standards so code added on top stays consistent with it:
 
 | Area           | What you get                                                                                 |
 | -------------- | -------------------------------------------------------------------------------------------- |
-| Layout         | `DashboardLayout` shell — collapsible desktop sidebar, sticky header, mobile drawer + bottom nav, mounted once so it survives navigation |
+| Pages          | A branded landing page (`/`) plus `/dashboard`, `/analytics` and `/settings` — component and pattern showcases with static demo data |
+| Layout         | `DashboardLayout` shell — collapsible desktop sidebar, sticky header, mobile drawer + bottom nav, mounted once so it survives navigation; `PageContainer` adds the heading and optional breadcrumb trail |
 | Design system  | `StatCard`, `MetricCard`, `DashboardCard`, `SectionHeader`, `EmptyState`, `ErrorState`, `LoadingState`, plus shadcn / Base UI primitives in `components/ui/` |
+| Data viz       | `Sparkline` and `BarList` — zero-dependency, server-renderable, wired to a categorical `--chart-*` palette anchored on the brand green |
 | Animation      | `FadeIn`, `SlideIn`, `ScaleIn`, `StaggerContainer`, `PageTransition` — built on `motion`, gated by `MotionProvider` on reduced-motion |
 | Theming        | Green/white, WCAG AA-checked, light + dark via `next-themes`; tokens in `app/globals.css`     |
 | State handling | App Router `error.tsx` / `loading.tsx` / `not-found.tsx` / `global-error.tsx` wired to the design system's state components |
@@ -77,8 +79,8 @@ Then:
 
 1. Read the [project standards](docs/standards/README.md) — folder, coding,
    component, and naming conventions the template already follows.
-2. Work through [Before you ship](#before-you-ship): replace the placeholder
-   routes and the starter page, wire real data, add authentication.
+2. Work through [Before you ship](#before-you-ship): replace the landing page
+   and showcase routes with real screens, wire real data, add authentication.
 3. Update `config/app.ts`, `package.json` (`name`, `version`), this README's
    title, and `LICENSE` (none is included — add one for your project).
 4. Keep `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`, and `docs/` — adapt
@@ -111,24 +113,27 @@ Then:
 
 ```
 app/
-  layout.tsx              Root layout — fonts, metadata, viewport, <AppProviders>, <Analytics>
-  page.tsx                Untouched Next.js starter page — replace or remove
-  globals.css             Design tokens (green/white, light + dark) and Tailwind layer setup
+  layout.tsx              Root layout — fonts, metadata (title template), viewport, <AppProviders>, <Analytics>
+  page.tsx                Branded landing page (server component, no motion) — replace with real marketing content
+  globals.css             Design tokens (green/white, light + dark; --chart-* palette) and Tailwind layer setup
   not-found.tsx           Branded 404 (global)
   global-error.tsx        Root-layout error boundary (most severe failure path)
   (dashboard)/
     layout.tsx            Mounts DashboardLayout once for every route in the group
-    dashboard/page.tsx    Showcase page with static demo data — replace with a real source
+    dashboard/page.tsx    Component showcase with static demo data
+    analytics/page.tsx    Sparkline / BarList / chart-token showcase
+    settings/page.tsx     Forms, tabs and switches showcase (client panels in settings-panels.tsx)
     error.tsx             Route-group error boundary
     loading.tsx           Route-group loading boundary
 
 components/
   layout/                 DashboardLayout, AppSidebar, AppHeader, MobileNavigation, PageContainer, ThemeToggle
-  dashboard/              StatCard, MetricCard, DashboardCard, SectionHeader, IconBadge, TrendIndicator, state components
+  dashboard/              StatCard, MetricCard, DashboardCard, SectionHeader, Sparkline, BarList, IconBadge, TrendIndicator, state components
   motion/                 FadeIn, SlideIn, ScaleIn, StaggerContainer, PageTransition
   ui/                     shadcn / Base UI primitives (button, dialog, select, field, table, ...)
 
 config/                   app.ts (name/version), layout.ts (dimensions, breakpoint), navigation.ts (sidebar items)
+lib/                      format.ts, navigation.ts, chart.ts (sparkline / bar geometry) — each with a colocated *.test.ts
 hooks/                    use-hydrated, use-ui-store-hydration
 lib/                      format.ts, navigation.ts, utils.ts (+ *.test.ts)
 providers/                AppProviders → ThemeProvider → QueryProvider (+ lazy Toaster); MotionProvider
@@ -197,9 +202,10 @@ See [Environment variables](#environment-variables) for the full list.
 pnpm dev
 ```
 
-Open <http://localhost:3000>. The showcase lives at
-[`/dashboard`](http://localhost:3000/dashboard); `/` is the unmodified
-Next.js starter page.
+Open <http://localhost:3000> for the landing page. The component showcases
+live at [`/dashboard`](http://localhost:3000/dashboard),
+[`/analytics`](http://localhost:3000/analytics) and
+[`/settings`](http://localhost:3000/settings).
 
 ---
 
@@ -268,12 +274,12 @@ code, read the relevant guide under `node_modules/next/dist/docs/` — see
 
 ### Before you ship
 
-- Replace the placeholder nav destinations in
-  [`config/navigation.ts`](config/navigation.ts) — `/users` and `/settings`
-  have no pages and resolve to the branded 404.
-- Replace `app/page.tsx` (`/`) — still the Next.js starter.
-- Swap `app/(dashboard)/dashboard/page.tsx`'s static demo data for a real
-  source.
+- Replace the landing page (`app/page.tsx`) with real marketing content, and
+  the three showcase routes (`/dashboard`, `/analytics`, `/settings`) with
+  real screens — their data is static demo content. Point
+  [`config/navigation.ts`](config/navigation.ts) at your own routes.
+- Wire the `Sparkline` / `BarList` / `StatCard` data to a real source; the
+  arrays in the showcase pages are hard-coded.
 - Wire `DashboardLayout`'s `user` prop once authentication exists, so the
   account menu renders. Its "Sign out" item has no handler yet — by design.
 - Add authentication and server-side route protection. This template has
@@ -404,10 +410,12 @@ the new host to the appropriate directive (`script-src`, `connect-src`,
 `img-src`, ...). For Sentry specifically, add your ingest host to
 `connect-src`. Rebuild — the header is generated at build time.
 
-### `/users` or `/settings` shows the 404 page
+### A sparkline or bar list looks flat or empty
 
-Expected. They're placeholder nav entries in `config/navigation.ts` with no
-pages yet. See [Before you ship](#before-you-ship).
+`Sparkline` needs at least two data points (it draws a dashed baseline
+otherwise); `BarList` renders nothing for an empty `data` array. Both clamp
+negative and zero values rather than drawing a reversed bar — see
+[`lib/chart.ts`](lib/chart.ts).
 
 ### Monitoring integration isn't recording anything
 

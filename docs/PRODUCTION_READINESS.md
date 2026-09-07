@@ -14,8 +14,8 @@ what a consuming app must still add is explicitly enumerated.
 | ---------------- | ---------------- | ------------------------------------------------------ |
 | Lint             | `pnpm lint`      | ✅ pass, 0 warnings                                     |
 | Typecheck        | `pnpm typecheck` | ✅ pass (`tsc --noEmit`, `strict`)                      |
-| Tests            | `pnpm test`      | ✅ 17 passed / 17 (2 files, `lib/format`, `lib/navigation`) |
-| Build            | `pnpm build`     | ✅ compiled in ~6.4s; `/`, `/_not-found`, `/dashboard` all `○ (Static)` prerendered |
+| Tests            | `pnpm test`      | ✅ 31 passed / 31 (3 files — `lib/format`, `lib/navigation`, `lib/chart`) |
+| Build            | `pnpm build`     | ✅ `/`, `/_not-found`, `/dashboard`, `/analytics`, `/settings` all `○ (Static)` prerendered |
 | Dependency audit | `pnpm audit`     | ✅ no known vulnerabilities                             |
 
 ## Review by area
@@ -121,8 +121,8 @@ what a consuming app must still add is explicitly enumerated.
 | # | Risk | Severity | Owner |
 | - | ---- | -------- | ----- |
 | 1 | **No authentication / authorization.** Template ships with none; `DashboardLayout`'s `user` prop only toggles UI. Any real deployment must add server-side route protection. | High (for a consuming app) | Consuming app |
-| 2 | **Placeholder routes & data.** `/users`, `/settings`, `/profile` resolve to the 404; `/` is the unmodified Next.js starter; `/dashboard` renders static demo data. | Medium | Consuming app |
-| 3 | **Limited test coverage.** Only `lib/` unit tests (17). No component or route-level tests; regressions in UI/layout would not be caught by CI. | Medium | Consuming app |
+| 2 | **Showcase data is static.** `/`, `/dashboard`, `/analytics` and `/settings` now all exist and are branded (Phase 23), but their metrics, sparklines and lists are hard-coded arrays. Wire real sources. | Medium | Consuming app |
+| 3 | **Limited test coverage.** `lib/` unit tests only (31). No component or route-level tests; UI/layout regressions would not be caught by CI. | Medium | Consuming app |
 | 4 | **Sentry CSP.** A real `NEXT_PUBLIC_SENTRY_DSN` without adding its ingest host to `connect-src` in `next.config.ts` → client-side error reports silently blocked. | Medium | Consuming app (documented) |
 | 5 | **No dependency automation.** No Dependabot/Renovate; pending majors (ESLint 10, TypeScript 7, `@types/node`) tracked in `docs/AUDIT.md` but not scheduled. | Low | Consuming app |
 | 6 | **Version drift.** `package.json` `version` is `0.1.0`; `config/app.ts` `APP_CONFIG.version` is `1.0.0`. Cosmetic; reconcile on first real release. | Low | Consuming app |
