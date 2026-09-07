@@ -82,7 +82,8 @@ Then:
 2. Work through [Before you ship](#before-you-ship): replace the landing page
    and showcase routes with real screens, wire real data, add authentication.
 3. Update `config/app.ts`, `package.json` (`name`, `version`), this README's
-   title, and `LICENSE` (none is included — add one for your project).
+   title, and the `LICENSE` copyright line (the template ships MIT — keep,
+   replace, or relicense as your project needs).
 4. Keep `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`, and `docs/` — adapt
    their contents to your project rather than deleting them.
 
@@ -133,16 +134,15 @@ components/
   ui/                     shadcn / Base UI primitives (button, dialog, select, field, table, ...)
 
 config/                   app.ts (name/version), layout.ts (dimensions, breakpoint), navigation.ts (sidebar items)
-lib/                      format.ts, navigation.ts, chart.ts (sparkline / bar geometry) — each with a colocated *.test.ts
 hooks/                    use-hydrated, use-ui-store-hydration
-lib/                      format.ts, navigation.ts, utils.ts (+ *.test.ts)
+lib/                      format.ts, navigation.ts, chart.ts (sparkline / bar geometry), utils.ts — each helper with a colocated *.test.ts
 providers/                AppProviders → ThemeProvider → QueryProvider (+ lazy Toaster); MotionProvider
 stores/                   ui-store.ts (Zustand)
 types/                    layout.ts, navigation.ts
 
 instrumentation.ts        Server + edge Sentry init, onRequestError hook
 instrumentation-client.ts Browser Sentry init + Microsoft Clarity snippet
-next.config.ts            Security headers (CSP, HSTS, X-Frame-Options, ...)
+next.config.ts            Security headers (CSP, HSTS, COOP/CORP, X-Frame-Options, ...) + poweredByHeader off
 ```
 
 ### Key decisions
@@ -449,3 +449,10 @@ prerender in production. Reproduce production issues with
 | [docs/AUDIT.md](docs/AUDIT.md)               | Repository, performance and build-configuration audit history   |
 | [docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md) | Final production review — validation results, per-area findings, remaining risks |
 | [AGENTS.md](AGENTS.md)                       | Working with this repo's Next.js version                        |
+
+---
+
+## License
+
+[MIT](LICENSE) © Alan Jalu Prasetyo. Use it for anything, including
+commercial and closed-source work; keep the copyright notice.
