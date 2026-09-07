@@ -1,0 +1,16 @@
+# Normalize line endings: store text as LF in the repo, check out native on
+# Windows. Keeps diffs clean when contributors are on different platforms.
+* text=auto eol=lf
+
+# Binary — never touch these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+
+# Lockfile: keep LF, and collapse it in diffs — it's generated, not read.
+pnpm-lock.yaml -diff linguist-generated

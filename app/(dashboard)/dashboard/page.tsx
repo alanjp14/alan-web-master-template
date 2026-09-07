@@ -285,7 +285,7 @@ export default function DashboardPage() {
                 <Input
                   id="demo-password"
                   type="password"
-                  defaultValue="1234"
+                  placeholder="••••••••"
                   aria-invalid
                 />
                 <FieldError>

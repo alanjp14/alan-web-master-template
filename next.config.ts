@@ -36,6 +36,10 @@ const cspHeader = `
   .trim();
 
 const nextConfig: NextConfig = {
+  // Don't advertise the framework (and, historically, its version) to every
+  // visitor and scanner. One less hint for someone fingerprinting the stack.
+  poweredByHeader: false,
+
   async headers() {
     return [
       {
@@ -52,6 +56,23 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
+          // Isolate this origin's browsing-context group. `allow-popups` keeps
+          // an OAuth / payment popup able to talk back to its opener, so this
+          // stays correct once a consuming app adds a popup-based sign-in.
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
+          // Cross-origin sites can't read this app's responses (defence against
+          // Spectre-style cross-origin leaks). Assets meant to be embedded
+          // elsewhere would need a looser value on their own route.
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
+          },
+          // Don't leak browsing behaviour by pre-resolving DNS for off-site
+          // links the user hasn't clicked.
+          { key: "X-DNS-Prefetch-Control", value: "off" },
           // Only takes effect once the app is actually served over HTTPS —
           // harmless over plain HTTP locally, where browsers ignore it.
           {

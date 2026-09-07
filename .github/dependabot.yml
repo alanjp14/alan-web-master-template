@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+  # Application + tooling dependencies. Grouped so a week's patch/minor bumps
+  # arrive as one PR that CI can validate in a single run; majors come
+  # separately since they may need code changes.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+
+  # Keeps the SHA-pinned actions in .github/workflows/ current, including
+  # security releases.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - ci

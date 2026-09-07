@@ -1,0 +1,10 @@
+# Default owner for everything in this repository. Combined with branch
+# protection on `main` (require a review, require CI to pass), this makes an
+# unreviewed change to the template impossible.
+* @alanjp14
+
+# Security-sensitive surfaces — call these out explicitly so a review is
+# never skipped on them.
+/.github/            @alanjp14
+/next.config.ts      @alanjp14
+/SECURITY.md         @alanjp14

@@ -72,10 +72,13 @@ export default function Home() {
 
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
+            {/* Hidden on the smallest screens — the hero's own CTAs are one
+                scroll away, and the header stays uncluttered at 320px. */}
             <Button
               nativeButton={false}
               render={<Link href="/dashboard" />}
               size="sm"
+              className="hidden sm:inline-flex"
             >
               Open dashboard
               <ArrowRight aria-hidden="true" />
@@ -85,7 +88,7 @@ export default function Home() {
       </header>
 
       <main className="flex-1">
-        <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
               <Sparkles className="size-3.5" aria-hidden="true" />

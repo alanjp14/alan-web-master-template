@@ -2,10 +2,55 @@
 
 ## Reporting a vulnerability
 
-This is a template repository with no production deployment or user data of
-its own. If you find a security issue in the template's code (as opposed to
-its dependencies — see below), open an issue or contact the maintainer
-directly rather than a public disclosure.
+Please **do not open a public issue** for a security problem.
+
+Report it privately through GitHub's
+[Report a vulnerability](https://github.com/alanjp14/alan-web-master-template/security/advisories/new)
+form (Security tab → Advisories). Include what you found, where, and a
+reproduction if you have one. You'll get an acknowledgement, and a fix and
+disclosure timeline once it's triaged.
+
+This repository is a template — it has no deployment or user data of its
+own — so most real-world risk lives in what a consuming application adds on
+top (auth, data, integrations). The **[security posture](#security-posture)**
+section below is the checklist for that.
+
+## Security posture
+
+What the template does to stay safe to build on, and what it deliberately
+leaves to the consuming app.
+
+### In the template
+
+| Area | Control |
+| ---- | ------- |
+| Response headers | CSP, HSTS, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`, `X-DNS-Prefetch-Control` — all in `next.config.ts`, applied to every route |
+| Framework fingerprint | `poweredByHeader: false` |
+| Rendering | React's default escaping only — no `dangerouslySetInnerHTML`, `eval`, `new Function`, `document.write` |
+| Error output | Raw `error.message` shown only in development; generic message + logged `digest` in production |
+| Secrets | None in the tree or git history; `.gitignore` excludes `.env*` except `.env.example` (placeholders only); no `process.env` reads in app code |
+| CI supply chain | GitHub Actions pinned to full commit SHAs; workflow `permissions` set to least privilege; `persist-credentials: false` on checkout |
+| Dependency scanning | `pnpm audit --audit-level high` in CI; `actions/dependency-review-action` blocks PRs that add a vulnerable dependency; Dependabot (npm + actions) weekly |
+| Static analysis | CodeQL (`security-and-quality`) on every push/PR and weekly |
+| Review | `CODEOWNERS` on the whole repo, `.github/` and `next.config.ts` called out explicitly |
+
+### Left to the consuming app (see [README's "Before you ship"](README.md#before-you-ship))
+
+- **Authentication and server-side authorization.** The template has none.
+  `DashboardLayout`'s `user` prop only toggles UI. Protect routes in
+  middleware or a layout, never by hiding a menu.
+- **Input validation.** Validate and sanitize every Server Action / Route
+  Handler input server-side; never trust a client-shown `FieldError`.
+- **The Sentry CSP host.** Setting a real `NEXT_PUBLIC_SENTRY_DSN` also means
+  adding its ingest host to `connect-src` in `next.config.ts`.
+- **Branch protection.** Turn on "require a pull request", "require review
+  from Code Owners" and "require status checks (CI, CodeQL)" for `main` in
+  the repo settings — the `CODEOWNERS` file only bites once this is on.
+- **Secret scanning & push protection.** Enable both in the repo's
+  Security settings (free for public repositories).
+- **A nonce-based CSP**, if the app moves to per-request rendering anyway —
+  it removes `'unsafe-inline'` for scripts, which the static-first template
+  can't drop without forcing dynamic rendering on every page.
 
 ## Audit — Phase 17
 
@@ -57,11 +102,11 @@ handling, authentication/authorization flow, dependency vulnerabilities.
 - **XSS**: no `dangerouslySetInnerHTML`, `eval`, `new Function`, or
   `document.write` anywhere in the codebase. React's default escaping is
   the only rendering path in use.
-- **Secrets handling**: no hardcoded API keys, tokens, or credentials found
-  (the `defaultValue="1234"` on the demo `Field`/`FieldError` password input
-  in the dashboard showcase is static UI demo content, not a real
-  credential). `.env.example` documents the convention; `.gitignore`
-  correctly excludes real `.env*` files.
+- **Secrets handling**: no hardcoded API keys, tokens, or credentials found.
+  `.env.example` documents the convention; `.gitignore` correctly excludes
+  real `.env*` files. (Phase 24 note: the dashboard showcase's demo password
+  input, which previously carried a `defaultValue`, now renders empty with a
+  placeholder — one less thing for a naive secret scanner to flag.)
 - **Environment variables**: zero `process.env` reads anywhere in the app —
   nothing to leak.
 - **Dependency vulnerabilities**: `pnpm audit` reports no known
@@ -85,3 +130,49 @@ handling, authentication/authorization flow, dependency vulnerabilities.
   needs server-rendering anyway (e.g., once it fetches real per-request
   data) — the dynamic-rendering cost this phase avoided stops being a
   tradeoff at that point.
+
+## Public-repo hardening — Phase 24
+
+Applied when the template was published for reuse across real, public,
+go-live projects.
+
+### CI / supply chain
+
+- **All GitHub Actions pinned to a full commit SHA** (`actions/checkout`,
+  `actions/setup-node`, `pnpm/action-setup`, `github/codeql-action`,
+  `actions/dependency-review-action`), with the version in a trailing
+  comment. A mutated or force-pushed tag can no longer change what runs.
+- **Workflow `permissions` set explicitly to least privilege** — `contents:
+  read` for CI, plus `security-events: write` only where CodeQL needs it.
+  Previously unset, which inherits the repository default.
+- **`persist-credentials: false`** on every checkout — the job never needs
+  the token after clone.
+- **`pnpm audit --audit-level high`** runs as its own CI job; a high or
+  critical advisory in the dependency tree fails the build.
+- **`actions/dependency-review-action`** on pull requests blocks a merge
+  that would introduce a vulnerable or disallowed-license dependency.
+- **Dependabot** (`.github/dependabot.yml`) — weekly `npm` and
+  `github-actions` updates; minor/patch grouped into one PR.
+
+### Application
+
+- **`Cross-Origin-Opener-Policy: same-origin-allow-popups`** and
+  **`Cross-Origin-Resource-Policy: same-origin`** added to `next.config.ts`
+  — browsing-context isolation and defence against cross-origin response
+  leaks. `allow-popups` keeps a future OAuth/payment popup working.
+- **`X-DNS-Prefetch-Control: off`** — no DNS prefetching of un-clicked
+  off-site links.
+- **`poweredByHeader: false`** — the `X-Powered-By: Next.js` header is gone.
+
+### Static analysis
+
+- **CodeQL** (`.github/workflows/codeql.yml`) with the
+  `security-and-quality` query suite, on every push and PR to `main` /
+  `develop` and on a weekly schedule.
+
+### Verified
+
+`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` all pass. Response
+headers confirmed against a real `next build` + `next start`: every header
+above present, `X-Powered-By` absent, production CSP unchanged (no
+`'unsafe-eval'`), all routes still statically prerendered.

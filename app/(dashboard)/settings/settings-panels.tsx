@@ -62,20 +62,24 @@ export function SettingsPanels() {
 
   return (
     <Tabs defaultValue="profile" className="gap-6">
-      <TabsList>
-        <TabsTrigger value="profile">
-          <UserIcon aria-hidden="true" />
-          Profile
-        </TabsTrigger>
-        <TabsTrigger value="notifications">
-          <BellIcon aria-hidden="true" />
-          Notifications
-        </TabsTrigger>
-        <TabsTrigger value="appearance">
-          <PaletteIcon aria-hidden="true" />
-          Appearance
-        </TabsTrigger>
-      </TabsList>
+      {/* Scrolls rather than overflowing the viewport on a narrow phone.
+          `-mx-1 px-1` keeps the focus ring off the clip edge. */}
+      <div className="-mx-1 overflow-x-auto px-1">
+        <TabsList>
+          <TabsTrigger value="profile">
+            <UserIcon aria-hidden="true" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <BellIcon aria-hidden="true" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="appearance">
+            <PaletteIcon aria-hidden="true" />
+            Appearance
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
       <TabsContent value="profile">
         <DashboardCard

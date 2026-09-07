@@ -56,8 +56,8 @@ standards so code added on top stays consistent with it:
 | Data layer     | TanStack Query provider mounted and ready (`providers/QueryProvider.tsx`); no queries defined yet |
 | Client state   | Zustand UI store (`stores/ui-store.ts`) with per-field selectors and hydration guards        |
 | Observability  | Sentry, Microsoft Clarity, Vercel Analytics — each a no-op until its env var is set          |
-| Security       | CSP + hardening headers in `next.config.ts`; see [SECURITY.md](SECURITY.md)                   |
-| CI             | `.github/workflows/ci.yml` runs lint + typecheck + test + build on every push/PR to `main` and `develop` |
+| Security       | CSP + a full set of hardening headers in `next.config.ts`; SHA-pinned Actions, CodeQL, dependency review, Dependabot; see [SECURITY.md](SECURITY.md) |
+| CI             | `.github/workflows/` — lint + typecheck + test + build, `pnpm audit`, CodeQL and dependency review on every push/PR to `main` and `develop` |
 
 ---
 
@@ -237,6 +237,12 @@ pnpm build
 
 Run the same four commands locally before opening a PR. `develop` should
 never be left failing any of them.
+
+Alongside it, `.github/workflows/` also runs `pnpm audit` (fails on a
+high/critical advisory), **CodeQL** static analysis, and — on PRs —
+**dependency review** (blocks a PR that adds a vulnerable dependency).
+Actions are pinned to commit SHAs and kept current by **Dependabot**. See
+[SECURITY.md](SECURITY.md#security-posture).
 
 ### Conventions
 
