@@ -22,3 +22,10 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
+          # Report findings in the job summary / PR comment but don't fail the
+          # check. The Dependency Graph feature has to be enabled in the repo's
+          # settings for this action to run at all; keeping it advisory means a
+          # fork or a not-yet-configured repo still gets green CI. Flip to
+          # `false` once "Dependency graph" is on if you want it blocking.
+          warn-only: true
+        continue-on-error: true

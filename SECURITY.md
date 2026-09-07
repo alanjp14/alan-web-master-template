@@ -30,7 +30,7 @@ leaves to the consuming app.
 | Error output | Raw `error.message` shown only in development; generic message + logged `digest` in production |
 | Secrets | None in the tree or git history; `.gitignore` excludes `.env*` except `.env.example` (placeholders only); no `process.env` reads in app code |
 | CI supply chain | GitHub Actions pinned to full commit SHAs; workflow `permissions` set to least privilege; `persist-credentials: false` on checkout |
-| Dependency scanning | `pnpm audit --audit-level high` in CI; `actions/dependency-review-action` blocks PRs that add a vulnerable dependency; Dependabot (npm + actions) weekly |
+| Dependency scanning | `pnpm audit --audit-level high` fails CI on a high/critical advisory; `actions/dependency-review-action` reports vulnerable/badly-licensed deps on PRs (advisory — see note below); Dependabot (npm + actions) weekly |
 | Static analysis | CodeQL (`security-and-quality`) on every push/PR and weekly |
 | Review | `CODEOWNERS` on the whole repo, `.github/` and `next.config.ts` called out explicitly |
 
@@ -149,8 +149,12 @@ go-live projects.
   the token after clone.
 - **`pnpm audit --audit-level high`** runs as its own CI job; a high or
   critical advisory in the dependency tree fails the build.
-- **`actions/dependency-review-action`** on pull requests blocks a merge
-  that would introduce a vulnerable or disallowed-license dependency.
+- **`actions/dependency-review-action`** on pull requests reports a
+  dependency change that would introduce a vulnerable or disallowed-license
+  package. It runs `warn-only` because the action needs the repo's
+  **Dependency graph** feature enabled to work at all — turn that on
+  (Settings → Advanced Security), then drop `warn-only` / `continue-on-error`
+  in `.github/workflows/dependency-review.yml` to make it blocking.
 - **Dependabot** (`.github/dependabot.yml`) — weekly `npm` and
   `github-actions` updates; minor/patch grouped into one PR.
 

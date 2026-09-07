@@ -240,8 +240,9 @@ never be left failing any of them.
 
 Alongside it, `.github/workflows/` also runs `pnpm audit` (fails on a
 high/critical advisory), **CodeQL** static analysis, and — on PRs —
-**dependency review** (blocks a PR that adds a vulnerable dependency).
-Actions are pinned to commit SHAs and kept current by **Dependabot**. See
+**dependency review** (flags a PR that adds a vulnerable dependency; advisory
+until the repo's Dependency Graph feature is enabled). Actions are pinned to
+commit SHAs and kept current by **Dependabot**. See
 [SECURITY.md](SECURITY.md#security-posture).
 
 ### Conventions
