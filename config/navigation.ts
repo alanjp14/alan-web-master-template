@@ -1,6 +1,6 @@
-import { LineChart, LayoutDashboard, Settings } from "lucide-react";
+import { LayoutDashboard, LineChart, Palette, Settings } from "lucide-react";
 
-import type { NavItem, NavSection } from "@/types/navigation";
+import type { MarketingLink, NavItem, NavSection } from "@/types/navigation";
 
 /**
  * Sidebar navigation. Every entry here resolves to a real page in this
@@ -19,6 +19,16 @@ export const mainNavigation: NavSection[] = [
         title: "Analytics",
         href: "/analytics",
         icon: LineChart,
+      },
+    ],
+  },
+  {
+    label: "Design system",
+    items: [
+      {
+        title: "Showcase",
+        href: "/showcase",
+        icon: Palette,
       },
     ],
   },
@@ -44,3 +54,13 @@ export const mainNavigation: NavSection[] = [
 export const mobileNavigation: NavItem[] = mainNavigation
   .flatMap((section) => section.items)
   .slice(0, 4);
+
+/**
+ * Header links for `MarketingLayout`. Point these at real marketing routes
+ * when you replace the showcase pages.
+ */
+export const marketingNavigation: MarketingLink[] = [
+  { label: "Pricing", href: "/pricing" },
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Showcase", href: "/showcase" },
+];

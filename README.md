@@ -1,9 +1,14 @@
 # Alan Web Master Template
 
-An enterprise dashboard template built on the Next.js App Router — a
-responsive application shell, a green/white design system, and the
+An enterprise UI/UX template built on the Next.js App Router — four
+switchable brand themes, four layout shells (sidebar dashboard, top-nav
+workspace, marketing, auth), a coherent component library, and the
 supporting animation, accessibility, state-handling and observability
 patterns, ready to build real product pages on top of.
+
+> **Dokumentasi bahasa Indonesia:** [analisis & rekomendasi](docs/analisis-dan-rekomendasi.md) ·
+> [sistem multi-tema & densitas](docs/multi-tema.md) ·
+> [varian layout](docs/varian-layout.md).
 
 ---
 
@@ -46,12 +51,12 @@ standards so code added on top stays consistent with it:
 
 | Area           | What you get                                                                                 |
 | -------------- | -------------------------------------------------------------------------------------------- |
-| Pages          | A branded landing page (`/`) plus `/dashboard`, `/analytics` and `/settings` — component and pattern showcases with static demo data |
-| Layout         | `DashboardLayout` shell — collapsible desktop sidebar, sticky header, mobile drawer + bottom nav, mounted once so it survives navigation; `PageContainer` adds the heading and optional breadcrumb trail |
-| Design system  | `StatCard`, `MetricCard`, `DashboardCard`, `SectionHeader`, `EmptyState`, `ErrorState`, `LoadingState`, plus shadcn / Base UI primitives in `components/ui/` |
-| Data viz       | `Sparkline` and `BarList` — zero-dependency, server-renderable, wired to a categorical `--chart-*` palette anchored on the brand green |
+| Pages          | Landing (`/`) + `/pricing`, `/dashboard`, `/analytics`, `/settings`, `/workspace`, `/sign-in`, `/sign-up`, `/forgot-password`, and `/showcase` — a full component + theme gallery |
+| Layouts        | Four shells: `DashboardLayout` (collapsible sidebar), `TopNavLayout` (horizontal nav), `MarketingLayout` (public header/footer), `AuthLayout` (centered card + split panel). `PageContainer` adds the heading and breadcrumb trail |
+| Design system  | `StatCard`, `MetricCard`, `DashboardCard`, `SectionHeader`, `EmptyState`, `ErrorState`, `LoadingState`, plus shadcn / Base UI primitives in `components/ui/`; `Card` has `elevated` / `flat` / `outlined` variants |
+| Data viz       | `Sparkline` and `BarList` — zero-dependency, server-renderable, wired to a per-theme categorical `--chart-*` palette |
 | Animation      | `FadeIn`, `SlideIn`, `ScaleIn`, `StaggerContainer`, `PageTransition` — built on `motion`, gated by `MotionProvider` on reduced-motion |
-| Theming        | Green/white, WCAG AA-checked, light + dark via `next-themes`; tokens in `app/globals.css`     |
+| Theming        | Four brand themes (Emerald / Sapphire / Amber / Slate) — each with its own palette, radius and typeface — × light/dark × comfortable/compact density. Tokens in `app/globals.css` + `app/themes.css`; registry in `config/theme.ts`. See [docs/multi-tema.md](docs/multi-tema.md) |
 | State handling | App Router `error.tsx` / `loading.tsx` / `not-found.tsx` / `global-error.tsx` wired to the design system's state components |
 | Data layer     | TanStack Query provider mounted and ready (`providers/QueryProvider.tsx`); no queries defined yet |
 | Client state   | Zustand UI store (`stores/ui-store.ts`) with per-field selectors and hydration guards        |
@@ -114,32 +119,40 @@ Then:
 
 ```
 app/
-  layout.tsx              Root layout — fonts, metadata (title template), viewport, <AppProviders>, <Analytics>
-  page.tsx                Branded landing page (server component, no motion) — replace with real marketing content
-  globals.css             Design tokens (green/white, light + dark; --chart-* palette) and Tailwind layer setup
+  layout.tsx              Root layout — fonts (Geist, Inter, Source Serif), <Script> appearance-init, <AppProviders>, <Analytics>
+  globals.css             Emerald (default) tokens, light + dark, density axis, font indirection
+  themes.css              Sapphire / Amber / Slate token overrides — [data-theme] blocks
   not-found.tsx           Branded 404 (global)
   global-error.tsx        Root-layout error boundary (most severe failure path)
-  (dashboard)/
-    layout.tsx            Mounts DashboardLayout once for every route in the group
+  (marketing)/            MarketingLayout shell
+    page.tsx              Landing page (server component, no motion)
+    pricing/page.tsx      Pricing — a second page on the same shell
+  (auth)/                 AuthLayout screens
+    auth-forms.tsx        Client form components (pattern showcase, no submit handler)
+    sign-in|sign-up|forgot-password/page.tsx
+  (topnav)/               TopNavLayout shell
+    workspace/page.tsx    Horizontal-nav demo — same components as /dashboard
+  (dashboard)/            DashboardLayout shell (mounted once for the group)
     dashboard/page.tsx    Component showcase with static demo data
     analytics/page.tsx    Sparkline / BarList / chart-token showcase
-    settings/page.tsx     Forms, tabs and switches showcase (client panels in settings-panels.tsx)
-    error.tsx             Route-group error boundary
-    loading.tsx           Route-group loading boundary
+    settings/page.tsx     Forms, tabs, theme + density controls (settings-panels.tsx)
+    showcase/page.tsx     Full theme + component gallery (showcase-controls.tsx)
+    error.tsx / loading.tsx  Route-group boundaries
 
 components/
-  layout/                 DashboardLayout, AppSidebar, AppHeader, MobileNavigation, PageContainer, ThemeToggle
+  layout/                 4 shells + AppSidebar, AppHeader, AppearanceMenu, AccountMenu, BrandMark, PageContainer, ThemeToggle
   dashboard/              StatCard, MetricCard, DashboardCard, SectionHeader, Sparkline, BarList, IconBadge, TrendIndicator, state components
   motion/                 FadeIn, SlideIn, ScaleIn, StaggerContainer, PageTransition
   ui/                     shadcn / Base UI primitives (button, dialog, select, field, table, ...)
 
-config/                   app.ts (name/version), layout.ts (dimensions, breakpoint), navigation.ts (sidebar items)
-hooks/                    use-hydrated, use-ui-store-hydration
-lib/                      format.ts, navigation.ts, chart.ts (sparkline / bar geometry), utils.ts — each helper with a colocated *.test.ts
+config/                   app.ts, layout.ts (dimensions), navigation.ts (nav items), theme.ts (brand-theme registry)
+hooks/                    use-hydrated, use-ui-store-hydration, use-appearance (brand theme + density)
+lib/                      format.ts, navigation.ts, chart.ts, theme.ts — each helper with a colocated *.test.ts
 providers/                AppProviders → ThemeProvider → QueryProvider (+ lazy Toaster); MotionProvider
 stores/                   ui-store.ts (Zustand)
 types/                    layout.ts, navigation.ts
 
+public/appearance-init.js Pre-paint brand-theme + density sync (loaded beforeInteractive)
 instrumentation.ts        Server + edge Sentry init, onRequestError hook
 instrumentation-client.ts Browser Sentry init + Microsoft Clarity snippet
 next.config.ts            Security headers (CSP, HSTS, COOP/CORP, X-Frame-Options, ...) + poweredByHeader off
@@ -150,12 +163,14 @@ next.config.ts            Security headers (CSP, HSTS, COOP/CORP, X-Frame-Option
 - **Persistent shell.** `DashboardLayout` is mounted from
   `app/(dashboard)/layout.tsx`, not per-page, so the sidebar and header
   keep their state across client navigations.
-- **Route-group isolation.** Dashboard-only dependencies (`motion`, Base UI
-  dialogs, etc.) are scoped to the `(dashboard)` group and never reach the
-  root page's bundle.
-- **Config-driven layout.** Sidebar dimensions and the desktop breakpoint
-  live in `config/layout.ts` and are exposed as CSS custom properties, so a
-  consuming app can retheme the shell without editing component internals.
+- **Route-group isolation.** Each shell is a route group with its own
+  `layout.tsx` — `(marketing)`, `(auth)`, `(topnav)`, `(dashboard)`. Group-only
+  dependencies (`motion` lives only in `(dashboard)`) never reach another
+  group's bundle.
+- **Config-driven layout & theme.** Sidebar dimensions and the desktop
+  breakpoint live in `config/layout.ts`; the brand-theme registry in
+  `config/theme.ts`. Both are consumed as data / CSS custom properties, so a
+  consuming app reskins without editing component internals.
 - **Static-first.** Pages prerender at build time. The CSP intentionally
   uses `'unsafe-inline'` rather than a per-request nonce to preserve that —
   see [SECURITY.md](SECURITY.md) and [`next.config.ts`](next.config.ts) for
@@ -202,10 +217,13 @@ See [Environment variables](#environment-variables) for the full list.
 pnpm dev
 ```
 
-Open <http://localhost:3000> for the landing page. The component showcases
-live at [`/dashboard`](http://localhost:3000/dashboard),
-[`/analytics`](http://localhost:3000/analytics) and
-[`/settings`](http://localhost:3000/settings).
+Open <http://localhost:3000> for the landing page.
+[`/showcase`](http://localhost:3000/showcase) is the full theme + component
+gallery; the dashboard demos live at
+[`/dashboard`](http://localhost:3000/dashboard),
+[`/analytics`](http://localhost:3000/analytics),
+[`/settings`](http://localhost:3000/settings) and
+[`/workspace`](http://localhost:3000/workspace) (top-nav shell).
 
 ---
 
@@ -281,10 +299,17 @@ code, read the relevant guide under `node_modules/next/dist/docs/` — see
 
 ### Before you ship
 
-- Replace the landing page (`app/page.tsx`) with real marketing content, and
-  the three showcase routes (`/dashboard`, `/analytics`, `/settings`) with
-  real screens — their data is static demo content. Point
+- Replace the landing page (`app/(marketing)/page.tsx`) and `/pricing` with
+  real marketing content, and the demo app routes (`/dashboard`, `/analytics`,
+  `/settings`, `/workspace`) with real screens — their data is static. Delete
+  `/showcase` or keep it as an internal reference. Point
   [`config/navigation.ts`](config/navigation.ts) at your own routes.
+- Pick a default theme in [`config/theme.ts`](config/theme.ts) (or reskin one
+  theme's tokens with the client's brand); drop the themes you don't ship and
+  hide `AppearanceMenu` if the client wants a single look. See
+  [docs/multi-tema.md](docs/multi-tema.md).
+- The `(auth)` forms are presentational — wire them to Server Actions and add
+  real session handling.
 - Wire the `Sparkline` / `BarList` / `StatCard` data to a real source; the
   arrays in the showcase pages are hard-coded.
 - Wire `DashboardLayout`'s `user` prop once authentication exists, so the
@@ -443,6 +468,9 @@ prerender in production. Reproduce production issues with
 
 | Document                                     | Contents                                                        |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| [docs/multi-tema.md](docs/multi-tema.md) 🇮🇩  | Brand-theme / density / mode system — how it works, how to add a theme |
+| [docs/varian-layout.md](docs/varian-layout.md) 🇮🇩 | The four layout shells and when to use each                    |
+| [docs/analisis-dan-rekomendasi.md](docs/analisis-dan-rekomendasi.md) 🇮🇩 | UI/UX review, what shipped, and the deferred roadmap |
 | [docs/standards/](docs/standards/README.md)  | Folder, coding, component and naming standards the template follows |
 | [CONTRIBUTING.md](CONTRIBUTING.md)           | Branch model, PR / merge / release workflow, commit conventions |
 | [SECURITY.md](SECURITY.md)                   | Security headers, error-boundary hardening, audit findings      |

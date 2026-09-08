@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Source_Serif_4 } from "next/font/google";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
@@ -14,6 +15,22 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Loaded for the brand themes that call for a different typeface — Inter for
+// Sapphire's body, Source Serif for Amber's headings (see app/themes.css).
+// `next/font` self-hosts both at build time, so `font-src 'self'` in the CSP
+// stays correct. `display: "swap"` keeps text visible while the face loads.
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -44,12 +61,17 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${sourceSerif.variable}`}
     >
       <body className="antialiased min-h-screen">
-        <AppProviders>
-          {children}
-        </AppProviders>
+        {/* Applies the persisted brand theme + density to <html> before paint,
+            so there's no flash of the default Emerald theme. `beforeInteractive`
+            hoists it into <head> in the server HTML, ahead of any app code.
+            Static same-origin file (not inline) to stay within the CSP and the
+            repo's no-dangerouslySetInnerHTML rule — see the file's header and
+            docs/multi-tema.md. */}
+        <Script src="/appearance-init.js" strategy="beforeInteractive" />
+        <AppProviders>{children}</AppProviders>
         {/* No-ops off Vercel or with Analytics not enabled for the project —
             safe to ship unconditionally, unlike the env-var-gated
             integrations in instrumentation-client.ts. */}

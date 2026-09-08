@@ -21,3 +21,12 @@ export interface NavSection {
   label?: string;
   items: NavItem[];
 }
+
+/**
+ * A plain text link for the marketing shell's header and footer — no icon, no
+ * active-state matching, just a label and an href.
+ */
+export interface MarketingLink {
+  label: string;
+  href: string;
+}

@@ -1,15 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./themes.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  /* Font utilities resolve through the `--app-font-*` custom properties below
+     rather than a baked-in value, so a `[data-theme]` block in themes.css can
+     swap the typeface at runtime (Sapphire → Inter, Amber → serif headings). */
+  --font-sans: var(--app-font-sans);
+  --font-mono: var(--app-font-mono);
+  --font-heading: var(--app-font-heading);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,7 +52,22 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Emerald is the default brand theme: its tokens live here on `:root` / `.dark`
+ * directly, so the app renders on-brand with no `data-theme` attribute set.
+ * The other themes (Sapphire, Amber, Slate) override from `app/themes.css`.
+ * See `config/theme.ts` for the registry and `docs/multi-tema.md` for the
+ * full write-up.
+ */
 :root {
+  /* Typeface stack, indirected so themes can swap it. `--font-geist-*` is set
+     by `next/font` in `app/layout.tsx`; the rest is a real fallback chain. */
+  --app-font-sans: var(--font-geist-sans), ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --app-font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Consolas, "Liberation Mono", monospace;
+  --app-font-heading: var(--app-font-sans);
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -130,6 +149,18 @@
   --sidebar-accent-foreground: oklch(0.962 0.044 156.743);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.723 0.219 149.579);
+}
+
+/*
+ * Density axis — `data-density="compact"` on <html> tightens the whole spacing
+ * scale ~12%. Every Tailwind v4 padding/margin/gap/size-in-spacing utility
+ * derives from `--spacing`, so overriding it here scales the entire UI in one
+ * move without per-component work. Layout dimensions in `config/layout.ts` are
+ * fixed `rem` values and are deliberately unaffected. `comfortable` is the
+ * default and sets no attribute. Applied pre-paint by `public/appearance-init.js`.
+ */
+:root[data-density="compact"] {
+  --spacing: 0.22rem;
 }
 
 @layer base {

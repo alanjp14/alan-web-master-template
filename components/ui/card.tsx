@@ -1,28 +1,56 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
+
+const cardVariants = cva(
+  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground transition-all [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+  {
+    variants: {
+      /**
+       * Surface treatment. `default` is the subtle hairline ring used across
+       * the dashboard; `elevated` trades it for a shadow (marketing, standalone
+       * cards); `outlined` uses a solid border; `flat` drops the edge entirely
+       * and tints the fill (nested cards, dense lists).
+       */
+      variant: {
+        default: "ring-1 ring-foreground/10 hover:ring-foreground/15",
+        elevated:
+          "shadow-sm ring-1 ring-foreground/10 hover:shadow-md hover:ring-foreground/15",
+        outlined: "border border-border",
+        flat: "bg-muted/40",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
 function Card({
   className,
   size = "default",
+  variant,
   interactive = false,
   ...props
-}: React.ComponentProps<"div"> & {
-  size?: "default" | "sm"
-  /**
-   * Adds hover/press affordance for a card that's itself a click target (a
-   * card wrapping a `Link`, or with its own `onClick`). Purely presentational
-   * — it doesn't add `role`, `tabIndex`, or a handler, so the caller is still
-   * responsible for the card's actual interactivity and keyboard support.
-   */
-  interactive?: boolean
-}) {
+}: React.ComponentProps<"div"> &
+  VariantProps<typeof cardVariants> & {
+    size?: "default" | "sm"
+    /**
+     * Adds hover/press affordance for a card that's itself a click target (a
+     * card wrapping a `Link`, or with its own `onClick`). Purely presentational
+     * — it doesn't add `role`, `tabIndex`, or a handler, so the caller is still
+     * responsible for the card's actual interactivity and keyboard support.
+     */
+    interactive?: boolean
+  }) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant ?? "default"}
       data-interactive={interactive || undefined}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 transition-all [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 hover:ring-foreground/15 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        cardVariants({ variant }),
         interactive &&
           "cursor-pointer hover:shadow-md hover:ring-foreground/20 active:scale-[0.99]",
         className
@@ -123,4 +151,5 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  cardVariants,
 }

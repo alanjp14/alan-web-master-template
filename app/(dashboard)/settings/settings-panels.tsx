@@ -13,9 +13,17 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useAppearance } from "@/hooks/use-appearance";
 
 const notifications = [
   {
@@ -48,6 +56,7 @@ const notifications = [
  */
 export function SettingsPanels() {
   const [saving, setSaving] = useState(false);
+  const { theme, setTheme, density, setDensity, themes } = useAppearance();
 
   function handleSave() {
     setSaving(true);
@@ -153,31 +162,64 @@ export function SettingsPanels() {
       <TabsContent value="appearance">
         <DashboardCard
           title="Appearance"
-          description="Theme is in the header — these are the finer controls."
+          description="Light/dark mode is in the header — these persist per browser."
         >
           <FieldGroup>
-            <Field orientation="horizontal" className="items-start justify-between">
+            <Field>
+              <FieldLabel htmlFor="appearance-theme">Brand theme</FieldLabel>
+              <Select
+                value={theme}
+                onValueChange={(value) =>
+                  setTheme(value as (typeof themes)[number]["id"])
+                }
+              >
+                <SelectTrigger id="appearance-theme" className="w-full">
+                  <SelectValue placeholder="Select a theme" />
+                </SelectTrigger>
+                <SelectContent>
+                  {themes.map((option) => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {option.label} — {option.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldDescription>
+                Recolors the whole app: accents, charts, focus rings, radius
+                and — for some themes — the typeface.
+              </FieldDescription>
+            </Field>
+            <Field
+              orientation="horizontal"
+              className="items-start justify-between"
+            >
               <div className="space-y-0.5">
                 <FieldLabel htmlFor="appearance-compact">
                   Compact density
                 </FieldLabel>
                 <FieldDescription>
-                  Tighten row heights and padding across tables and lists.
+                  Tightens the spacing scale ~12% across every screen.
                 </FieldDescription>
               </div>
-              <Switch id="appearance-compact" />
+              <Switch
+                id="appearance-compact"
+                checked={density === "compact"}
+                onCheckedChange={(checked) =>
+                  setDensity(checked ? "compact" : "comfortable")
+                }
+              />
             </Field>
-            <Field orientation="horizontal" className="items-start justify-between">
+            <Field
+              orientation="horizontal"
+              className="items-start justify-between"
+            >
               <div className="space-y-0.5">
-                <FieldLabel htmlFor="appearance-motion">
-                  Interface animation
-                </FieldLabel>
+                <FieldLabel>Interface animation</FieldLabel>
                 <FieldDescription>
-                  Reveal and transition effects. Your OS “reduce motion”
-                  setting always wins.
+                  Reveal and transition effects follow your OS “reduce motion”
+                  setting automatically — no per-app toggle needed.
                 </FieldDescription>
               </div>
-              <Switch id="appearance-motion" defaultChecked />
             </Field>
           </FieldGroup>
         </DashboardCard>

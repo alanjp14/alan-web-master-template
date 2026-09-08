@@ -1,87 +1,17 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { cn } from "cn";
-import {
-  LogOutIcon,
-  MenuIcon,
-  PanelLeftIcon,
-  SettingsIcon,
-  UserIcon,
-} from "lucide-react";
+import { MenuIcon, PanelLeftIcon } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { AccountMenu } from "@/components/layout/AccountMenu";
+import { AppearanceMenu } from "@/components/layout/AppearanceMenu";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { APP_CONFIG } from "@/config/app";
 import { useUIStore } from "@/stores/ui-store";
 import type { AppUser } from "@/types/layout";
-
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
-function UserMenu({ user }: { user: AppUser }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full"
-            aria-label={`Account menu for ${user.name}`}
-          />
-        }
-      >
-        <Avatar size="sm">
-          {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt="" />}
-          <AvatarFallback>{initialsOf(user.name)}</AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-52">
-        <div className="px-1.5 py-1">
-          <p className="truncate text-sm font-medium">{user.name}</p>
-          {user.email && (
-            <p className="truncate text-xs text-muted-foreground">
-              {user.email}
-            </p>
-          )}
-        </div>
-        <DropdownMenuSeparator />
-        {/* Both land on /settings — its first tab is the profile. Split them
-            once a consuming app has a dedicated profile route. */}
-        <DropdownMenuItem render={<Link href="/settings" />}>
-          <UserIcon aria-hidden="true" />
-          Profile
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/settings" />}>
-          <SettingsIcon aria-hidden="true" />
-          Settings
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
-          <LogOutIcon aria-hidden="true" />
-          Sign out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 export interface AppHeaderProps {
   /** Signed-in user. Omit to hide the account menu. */
@@ -151,6 +81,7 @@ export function AppHeader({
 
       <div className="ml-auto flex items-center gap-1">
         {actions}
+        <AppearanceMenu />
         <ThemeToggle />
         {user && (
           <>
@@ -159,7 +90,7 @@ export function AppHeader({
               className="mx-1 h-5"
               aria-hidden="true"
             />
-            <UserMenu user={user} />
+            <AccountMenu user={user} />
           </>
         )}
       </div>
