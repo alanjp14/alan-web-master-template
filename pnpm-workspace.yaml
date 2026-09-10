@@ -1,8 +1,12 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
 allowBuilds:
   # Not needed: this template doesn't wrap next.config.ts with
   # withSentryConfig, so nothing here uploads source maps via the Sentry
   # CLI — see docs/MONITORING.md. Its postinstall just downloads that CLI's
   # platform binary, which would otherwise go unused.
-  '@sentry/cli': false
+  "@sentry/cli": false
   sharp: false
   unrs-resolver: false

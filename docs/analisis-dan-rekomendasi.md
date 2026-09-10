@@ -6,6 +6,22 @@ Fullstack Development.
 Pertanyaan inti: **apakah template ini menyediakan banyak opsi tampilan
 (look & feel) frontend untuk kebutuhan klien yang berbeda-beda?**
 
+> **Adendum (sesi berikutnya) — stack frontend/backend.**
+> Pertanyaan lanjutan: *apakah draft ini sudah memakai frontend Next.js
+> dikombinasikan dengan backend Bun.js?*
+>
+> **Jawaban: belum.** Saat ditinjau, repo adalah **frontend-only** — satu
+> app Next.js 16 tanpa API, tanpa Server Actions, tanpa layanan backend;
+> seluruh data di-*hard-code* di komponen. Runtime & tooling: Node + pnpm,
+> tidak ada Bun.
+>
+> **Sudah dikerjakan:** repo diubah menjadi **monorepo pnpm** —
+> `apps/web` (Next.js, tidak berubah fungsinya) + `apps/api` (Hono di atas
+> runtime **Bun**) + `packages/shared` (tipe & kontrak API dipakai kedua
+> sisi). Dashboard kini punya satu panel yang benar-benar mengambil data
+> dari API Bun via React Query. Detail lengkap:
+> [docs/arsitektur-monorepo.md](arsitektur-monorepo.md).
+
 ---
 
 ## 1. Ringkasan temuan awal (sebelum sesi ini)

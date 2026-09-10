@@ -2,6 +2,20 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// The Bun API (`@app/api`) the browser calls from `lib/api-client.ts`. It's a
+// separate origin, so it has to be named in `connect-src` or the CSP blocks
+// every fetch to it. Derived from the same env var the client uses; the
+// localhost fallback matches the API's dev port.
+const apiOrigin = (() => {
+  try {
+    return new URL(
+      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001",
+    ).origin;
+  } catch {
+    return "http://localhost:3001";
+  }
+})();
+
 // No nonce here deliberately: a nonce-based CSP requires every page to be
 // dynamically rendered (Next.js can only inject a nonce per-request), which
 // would take this template's fully static build and force it onto a server
@@ -25,7 +39,7 @@ const cspHeader = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data:;
   font-src 'self';
-  connect-src 'self' https://va.vercel-scripts.com https://www.clarity.ms;
+  connect-src 'self' ${apiOrigin} https://va.vercel-scripts.com https://www.clarity.ms;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -39,6 +53,11 @@ const nextConfig: NextConfig = {
   // Don't advertise the framework (and, historically, its version) to every
   // visitor and scanner. One less hint for someone fingerprinting the stack.
   poweredByHeader: false,
+
+  // `@app/shared` is published inside the monorepo as raw TypeScript (no
+  // build step), so Next has to compile it the same way it compiles this
+  // app's own source.
+  transpilePackages: ["@app/shared"],
 
   async headers() {
     return [

@@ -1,12 +1,15 @@
 # Alan Web Master Template
 
-An enterprise UI/UX template built on the Next.js App Router — four
-switchable brand themes, four layout shells (sidebar dashboard, top-nav
+An enterprise UI/UX template — a **pnpm monorepo** pairing a Next.js App
+Router frontend (`apps/web`) with a Bun + Hono API (`apps/api`), their
+request/response types shared through `packages/shared`. The frontend ships
+four switchable brand themes, four layout shells (sidebar dashboard, top-nav
 workspace, marketing, auth), a coherent component library, and the
 supporting animation, accessibility, state-handling and observability
 patterns, ready to build real product pages on top of.
 
 > **Dokumentasi bahasa Indonesia:** [analisis & rekomendasi](docs/analisis-dan-rekomendasi.md) ·
+> [arsitektur monorepo (Next.js + Bun)](docs/arsitektur-monorepo.md) ·
 > [sistem multi-tema & densitas](docs/multi-tema.md) ·
 > [varian layout](docs/varian-layout.md).
 
@@ -35,9 +38,12 @@ components, themed light/dark tokens, motion primitives that respect
 `prefers-reduced-motion`, branded error/loading boundaries, and monitoring
 hooks that stay dormant until configured.
 
-What it deliberately does **not** include: authentication, a database, real
-API integration, or business logic. Those are application concerns; see
-[Before you ship](#before-you-ship).
+What it deliberately does **not** include: authentication, a database, or
+business logic. Those are application concerns; see
+[Before you ship](#before-you-ship). It **does** now include a real API
+service (`apps/api`) — a Hono app on Bun with a health check and two
+read-only endpoints that back the dashboard — wired end to end so the
+frontend calls it through React Query with shared types.
 
 The conventions the template already follows are documented as project
 standards so code added on top stays consistent with it:
@@ -51,6 +57,9 @@ standards so code added on top stays consistent with it:
 
 | Area           | What you get                                                                                 |
 | -------------- | -------------------------------------------------------------------------------------------- |
+| Workspace      | pnpm monorepo: `apps/web` (Next.js), `apps/api` (Bun + Hono), `packages/shared` (types + API contract). Root scripts run all three |
+| Backend        | `apps/api` — Hono on Bun. `GET /api/v1/health \| /stats \| /activity`, uniform `ApiError` body, CORS, request logging, `bun test` per route. In-memory sample data to swap for real queries |
+| Frontend ↔ API | `apps/web/lib/api-client.ts` (typed fetch, `NEXT_PUBLIC_API_URL`) + `features/metrics/` (React Query hooks); the `/dashboard` "Live data" panel is fetched from the API |
 | Pages          | Landing (`/`) + `/pricing`, `/dashboard`, `/analytics`, `/settings`, `/workspace`, `/sign-in`, `/sign-up`, `/forgot-password`, and `/showcase` — a full component + theme gallery |
 | Layouts        | Four shells: `DashboardLayout` (collapsible sidebar), `TopNavLayout` (horizontal nav), `MarketingLayout` (public header/footer), `AuthLayout` (centered card + split panel). `PageContainer` adds the heading and breadcrumb trail |
 | Design system  | `StatCard`, `MetricCard`, `DashboardCard`, `SectionHeader`, `EmptyState`, `ErrorState`, `LoadingState`, plus shadcn / Base UI primitives in `components/ui/`; `Card` has `elevated` / `flat` / `outlined` variants |
@@ -100,7 +109,10 @@ Then:
 
 | Layer            | Choice                                             |
 | ---------------- | ------------------------------------------------- |
-| Framework        | Next.js 16 (App Router, React 19)                  |
+| Workspace        | pnpm monorepo — `apps/web`, `apps/api`, `packages/shared` |
+| Frontend         | Next.js 16 (App Router, React 19) on Node          |
+| Backend          | Hono 4 on the Bun runtime (`apps/api`)             |
+| Shared contract  | `@app/shared` — raw TypeScript, imported by both apps |
 | Language         | TypeScript 5 (`strict`)                            |
 | Styling          | Tailwind CSS v4 (`@tailwindcss/postcss`)           |
 | UI primitives    | shadcn components on Base UI (`@base-ui/react`)    |
@@ -112,10 +124,24 @@ Then:
 | Toasts           | `sonner`                                           |
 | Error tracking   | `@sentry/nextjs`                                   |
 | Analytics        | `@vercel/analytics`, Microsoft Clarity (snippet)   |
-| Package manager  | pnpm 11                                            |
-| Test runner      | Vitest                                             |
+| Package manager  | pnpm 11 (workspace); Bun ≥ 1.4 is the `apps/api` runtime |
+| Test runner      | Vitest (`apps/web`), `bun test` (`apps/api`)       |
 
 ### Directory layout
+
+```
+package.json              Root workspace — dev / build / lint / typecheck / test across all packages
+pnpm-workspace.yaml       packages: apps/*, packages/*
+tsconfig.base.json        Compiler options shared by every package
+
+packages/shared/          @app/shared — types + API contract (index.ts, api.ts). Raw .ts, no build step
+apps/api/                 @app/api — Bun + Hono. See apps/api/README.md
+  src/index.ts            Bun server entry (`export default { port, fetch }`)
+  src/app.ts              Hono app: CORS + logger middleware, routes, uniform error handling
+  src/data.ts             In-memory sample data — replace with real queries
+  src/app.test.ts         `bun test` coverage for every route
+apps/web/                 @app/web — the Next.js app (everything below is under apps/web/)
+```
 
 ```
 app/
@@ -145,9 +171,10 @@ components/
   motion/                 FadeIn, SlideIn, ScaleIn, StaggerContainer, PageTransition
   ui/                     shadcn / Base UI primitives (button, dialog, select, field, table, ...)
 
+features/metrics/         Example feature — fetchers, React Query hooks (useStats/useActivity), LiveMetrics component
 config/                   app.ts, layout.ts (dimensions), navigation.ts (nav items), theme.ts (brand-theme registry)
 hooks/                    use-hydrated, use-ui-store-hydration, use-appearance (brand theme + density)
-lib/                      format.ts, navigation.ts, chart.ts, theme.ts — each helper with a colocated *.test.ts
+lib/                      format.ts, navigation.ts, chart.ts, theme.ts, api-client.ts (typed client for @app/api) — helpers have colocated *.test.ts
 providers/                AppProviders → ThemeProvider → QueryProvider (+ lazy Toaster); MotionProvider
 stores/                   ui-store.ts (Zustand)
 types/                    layout.ts, navigation.ts
@@ -187,8 +214,9 @@ next.config.ts            Security headers (CSP, HSTS, COOP/CORP, X-Frame-Option
 
 | Tool | Version                                  | Notes                                        |
 | ---- | ---------------------------------------- | -------------------------------------------- |
-| Node | `^22.12.0 \|\| ^24.0.0 \|\| >=26.0.0`    | Enforced by `engines` in `package.json`; CI runs Node 24 |
-| pnpm | 11.x (`packageManager` pins `11.25.0`)   | `corepack enable` will provision the right version |
+| Node | `^22.12.0 \|\| ^24.0.0 \|\| >=26.0.0`    | Runtime for `apps/web`. Enforced by `engines`; CI runs Node 24 |
+| pnpm | 11.x (`packageManager` pins `11.25.0`)   | Workspace package manager. `corepack enable` provisions it |
+| Bun  | `>= 1.4`                                 | Runtime for `apps/api` (`bun dev` / `bun test` / `bun build`). [Install](https://bun.sh) |
 
 ### Install
 
@@ -201,21 +229,26 @@ pnpm install
 
 ### Environment
 
-No environment variables are required to run the app. To enable monitoring,
-copy the example file and fill in what you need:
+No environment variables are required to run either app. Each has its own
+`.env.example`:
 
 ```bash
-cp .env.example .env.local
+cp apps/web/.env.example apps/web/.env.local   # NEXT_PUBLIC_API_URL + monitoring
+cp apps/api/.env.example apps/api/.env          # API_PORT, CORS origins
 ```
 
 See [Environment variables](#environment-variables) for the full list.
-`.env.local` is git-ignored.
+`.env*` files are git-ignored.
 
 ### First run
 
 ```bash
 pnpm dev
 ```
+
+Starts `apps/web` on <http://localhost:3000> and `apps/api` on
+<http://localhost:3001> together. The `/dashboard` "Live data" panel is
+served by the API; run `pnpm dev:web` alone and it shows an error state.
 
 Open <http://localhost:3000> for the landing page.
 [`/showcase`](http://localhost:3000/showcase) is the full theme + component
@@ -231,14 +264,19 @@ gallery; the dashboard demos live at
 
 ### Scripts
 
-| Command          | What it does                                              |
-| ---------------- | -------------------------------------------------------- |
-| `pnpm dev`       | Start the dev server (HMR) on port 3000                  |
-| `pnpm build`     | Production build into `.next/`                           |
-| `pnpm start`     | Serve the production build (run `pnpm build` first)      |
-| `pnpm lint`      | ESLint (`eslint-config-next`)                            |
-| `pnpm typecheck` | `tsc --noEmit`                                           |
-| `pnpm test`      | Run the Vitest suite once                                |
+Run from the repo root; each fans out across the workspace.
+
+| Command             | What it does                                              |
+| ------------------- | -------------------------------------------------------- |
+| `pnpm dev`          | `apps/web` (:3000, HMR) + `apps/api` (:3001, watch) in parallel |
+| `pnpm dev:web` / `pnpm dev:api` | Just one app                                 |
+| `pnpm build`        | Build `@app/shared` → `@app/api` → `@app/web`, in order  |
+| `pnpm start`        | Serve both production builds (run `pnpm build` first)    |
+| `pnpm -r lint`      | ESLint in every package                                  |
+| `pnpm -r typecheck` | `tsc --noEmit` in every package                          |
+| `pnpm -r test`      | Vitest (`apps/web`) + `bun test` (`apps/api`)            |
+
+Inside `apps/api`, `bun run <script>` works directly (`bun test`, `bun dev`).
 
 ### The CI gate
 
@@ -247,14 +285,15 @@ and `develop`:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm lint
-pnpm typecheck
-pnpm test
+pnpm -r lint
+pnpm -r typecheck
+pnpm -r test
 pnpm build
 ```
 
-Run the same four commands locally before opening a PR. `develop` should
-never be left failing any of them.
+CI also sets up Bun (for `apps/api`'s `test` / `build`). Run the same
+commands locally before opening a PR. `develop` should never be left failing
+any of them.
 
 Alongside it, `.github/workflows/` also runs `pnpm audit` (fails on a
 high/critical advisory), **CodeQL** static analysis, and — on PRs —
@@ -278,8 +317,12 @@ Full detail in [docs/standards/](docs/standards/README.md). In short:
 - **Naming**: PascalCase component files, kebab-case everywhere else,
   `<Name>Props`, `is`/`has` booleans, Conventional Commits.
   [Naming standards](docs/standards/naming-standards.md).
-- **Imports**: `@/*` is aliased to the repo root (`tsconfig.json`, mirrored
-  in Vitest). `cn` from the `cn` package directly.
+- **Imports**: inside `apps/web`, `@/*` is aliased to `apps/web` itself
+  (`tsconfig.json`, mirrored in Vitest). Cross-app code goes through
+  `@app/shared`. `cn` from the `cn` package directly.
+- **Workspace**: `apps/web` and `apps/api` never import each other's files —
+  only `@app/shared`. See [docs/arsitektur-monorepo.md](docs/arsitektur-monorepo.md)
+  and the repo-root [AGENTS.md](AGENTS.md).
 - **Branching**: branch from `develop` as `feature/<name>`, PR back into
   `develop`. Full branch model in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -293,9 +336,9 @@ Config is in `components.json`; generated files land in `components/ui/`.
 
 ### Working with the Next.js docs
 
-This project tracks a fast-moving Next.js release. Before writing framework
-code, read the relevant guide under `node_modules/next/dist/docs/` — see
-[AGENTS.md](AGENTS.md).
+`apps/web` tracks a fast-moving Next.js release. Before writing framework
+code, read the relevant guide under `apps/web/node_modules/next/dist/docs/` —
+see [apps/web/AGENTS.md](apps/web/AGENTS.md).
 
 ### Before you ship
 
@@ -310,8 +353,12 @@ code, read the relevant guide under `node_modules/next/dist/docs/` — see
   [docs/multi-tema.md](docs/multi-tema.md).
 - The `(auth)` forms are presentational — wire them to Server Actions and add
   real session handling.
-- Wire the `Sparkline` / `BarList` / `StatCard` data to a real source; the
-  arrays in the showcase pages are hard-coded.
+- Replace `apps/api/src/data.ts` with real queries (DB / upstream service).
+  The route handlers and web hooks stay unchanged — return types come from
+  `@app/shared`. Add auth middleware to `apps/api` and protect its routes.
+- Most `Sparkline` / `BarList` / `StatCard` instances still use hard-coded
+  arrays; only the `/dashboard` "Live data" panel is wired to the API. Follow
+  that pattern (`features/metrics/`) for the rest.
 - Wire `DashboardLayout`'s `user` prop once authentication exists, so the
   account menu renders. Its "Sign out" item has no handler yet — by design.
 - Add authentication and server-side route protection. This template has
@@ -321,42 +368,60 @@ code, read the relevant guide under `node_modules/next/dist/docs/` — see
 
 ## Deployment
 
-The build produces a standard Next.js server output in `.next/`. Pages are
-prerendered where possible; `next start` serves them from a Node process.
+The two apps deploy **separately**: `apps/web` as a Next.js app, `apps/api`
+as a Bun process. Deploy the API first, then build the web app with
+`NEXT_PUBLIC_API_URL` pointing at it.
 
 ### Prerequisites for any target
 
 1. `pnpm build` passes.
-2. Node matches the `engines` range on the host.
-3. Any environment variables you rely on are set in the host's environment
-   (not committed). `NEXT_PUBLIC_`-prefixed variables are read at **build
-   time** and inlined — set them before `pnpm build`, and rebuild to change
-   them.
+2. Node matches the `engines` range on the web host; Bun ≥ 1.4 on the API host.
+3. Environment variables are set in each host's environment (not committed).
+   `NEXT_PUBLIC_API_URL` and other `NEXT_PUBLIC_`-prefixed variables are read
+   at **build time** and inlined — set them before `pnpm --filter @app/web
+   build`, and rebuild to change them.
 
-### Vercel (zero-config)
+### apps/web — Vercel (zero-config)
 
-Push the repo and import it. Vercel detects Next.js, runs `pnpm install` and
-`pnpm build`, and serves the result. Set environment variables in
-**Project → Settings → Environment Variables**. Turn on **Project →
-Analytics** to activate the already-present `<Analytics />`.
+Import the repo, set the **Root Directory** to `apps/web` (Vercel then runs
+the workspace install and `next build`). Set `NEXT_PUBLIC_API_URL` and any
+monitoring vars in **Project → Settings → Environment Variables**. Turn on
+**Project → Analytics** to activate the present `<Analytics />`.
 
-### Node server / container
+### apps/api — any Bun host
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm build
-pnpm start            # serves on $PORT (default 3000)
+pnpm --filter @app/api build          # → apps/api/dist/index.js
+cd apps/api && bun run dist/index.js  # honors API_PORT, API_ALLOWED_ORIGINS, NODE_ENV
 ```
 
-A minimal container: install dependencies, build, then run `pnpm start` as
-the entrypoint with `NODE_ENV=production`. Put a TLS-terminating proxy in
-front — the `Strict-Transport-Security` header only takes effect over HTTPS.
+Works on a container (`oven/bun` base image), Railway, Fly.io, or a VM. Set
+`API_ALLOWED_ORIGINS` to the deployed web origin, and add that API origin to
+`connect-src` — it is derived from `NEXT_PUBLIC_API_URL` in
+[`apps/web/next.config.ts`](apps/web/next.config.ts), so setting that var is
+usually enough.
+
+### apps/web — Node server / container
+
+```bash
+pnpm install --frozen-lockfile
+pnpm --filter @app/web... build
+cd apps/web && pnpm start   # serves on $PORT (default 3000)
+```
+
+A minimal container: install dependencies, build, then run `pnpm start` from
+`apps/web` as the entrypoint with `NODE_ENV=production`. Put a
+TLS-terminating proxy in front — the `Strict-Transport-Security` header only
+takes effect over HTTPS.
 
 ### Security headers after deployment
 
-`next.config.ts` sets the CSP and hardening headers on all routes. Two
-follow-ups once you deploy:
+`apps/web/next.config.ts` sets the CSP and hardening headers on all routes.
+Follow-ups once you deploy:
 
+- Set `NEXT_PUBLIC_API_URL` before building so the API origin lands in
+  `connect-src` automatically.
 - If you set a real `NEXT_PUBLIC_SENTRY_DSN`, add your project's Sentry
   ingest host to `connect-src` in `next.config.ts` — the DSN host is
   project-specific and not pre-allowlisted.
@@ -373,16 +438,26 @@ after `validate` on `main`.
 
 ## Environment variables
 
-Every variable is **optional** — the app runs with none set. All current
-variables configure monitoring and are `NEXT_PUBLIC_`-prefixed (read at
-build time, exposed to the browser). Copy [`.env.example`](.env.example) to
-`.env.local` for local use.
+Every variable is **optional** — both apps run with none set. Copy
+[`apps/web/.env.example`](apps/web/.env.example) and
+[`apps/api/.env.example`](apps/api/.env.example) for local use.
+
+**`apps/web`** (`NEXT_PUBLIC_`-prefixed → read at build time, exposed to the browser):
 
 | Variable                         | Purpose                                          | Where it's read                                              | Default when unset            |
 | -------------------------------- | ----------------------------------------------- | ---------------------------------------------------------- | ----------------------------- |
+| `NEXT_PUBLIC_API_URL`            | Origin of `apps/api`; also feeds CSP `connect-src` | `lib/api-client.ts`, `next.config.ts`                    | `http://localhost:3001`       |
 | `NEXT_PUBLIC_SENTRY_DSN`         | Sentry error tracking + performance tracing     | `instrumentation.ts`, `instrumentation-client.ts`, error boundaries | Sentry disabled (SDK no-ops)  |
 | `NEXT_PUBLIC_CLARITY_PROJECT_ID` | Microsoft Clarity session replay + heatmaps     | `instrumentation-client.ts`                                 | Clarity snippet not injected  |
 | _(none)_ Vercel Analytics        | Page views + custom events                      | `app/layout.tsx` (`<Analytics />`)                          | No-op off Vercel / until enabled in dashboard |
+
+**`apps/api`** (server-side only):
+
+| Variable               | Purpose                                            | Default when unset        |
+| ---------------------- | ------------------------------------------------- | ------------------------- |
+| `API_PORT`             | Port the Bun server binds to                       | `3001`                    |
+| `API_ALLOWED_ORIGINS`  | Comma-separated CORS allowlist (enforced in prod)  | `http://localhost:3000`   |
+| `NODE_ENV`             | `production` tightens CORS + hides error detail    | `development`             |
 
 Notes:
 

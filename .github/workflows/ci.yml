@@ -38,17 +38,24 @@ jobs:
           node-version: 24
           cache: pnpm
 
+      # `@app/api` runs on Bun — its `test` and `build` scripts shell out to
+      # `bun`. Dependabot pins this to a SHA on its first run.
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: "1.4.2"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm -r lint
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm -r typecheck
 
       - name: Test
-        run: pnpm test
+        run: pnpm -r test
 
       - name: Build
         run: pnpm build

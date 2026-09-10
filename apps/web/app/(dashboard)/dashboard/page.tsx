@@ -31,6 +31,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { LiveMetrics } from "@/features/metrics";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -77,6 +78,15 @@ export default function DashboardPage() {
           by the sidebar, not just the viewport — a fixed `lg:` breakpoint
           can't tell a collapsed sidebar from an expanded one. */}
       <div className="@container space-y-10">
+        <section className="space-y-4">
+          <SectionHeader
+            title="Live data"
+            description="Fetched from the Bun API (@app/api) via React Query — every other widget on this page uses static demo data."
+            icon={ActivityIcon}
+          />
+          <LiveMetrics />
+        </section>
+
         <section className="space-y-4">
           <SectionHeader
             title="Overview"

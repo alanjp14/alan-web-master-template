@@ -1,0 +1,20 @@
+{
+  "name": "@app/shared",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./api": "./src/api.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "echo \"(no lint for @app/shared)\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"(no tests for @app/shared)\""
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
