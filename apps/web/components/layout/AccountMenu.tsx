@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogOutIcon, SettingsIcon, UserIcon } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { authClient } from "@/lib/auth-client";
 import type { AppUser } from "@/types/layout";
 
 function initialsOf(name: string): string {
@@ -32,11 +35,22 @@ export interface AccountMenuProps {
  * Avatar-triggered account dropdown — name, email, profile / settings links,
  * and a sign-out item.
  *
- * Shared by every shell (`AppHeader`, `TopNavLayout`). Auth-agnostic: the
- * "Sign out" item has no handler by design — wire it where you mount the
- * layout, once a session provider exists.
+ * Shared by every shell (`AppHeader`, `TopNavLayout`). "Sign out" calls
+ * `authClient.signOut()` (Better Auth, proxied through this app's own
+ * origin — see `lib/auth-client.ts`) directly rather than taking a prop,
+ * since every route that renders this menu is behind the same session.
  */
 export function AccountMenu({ user, className }: AccountMenuProps) {
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    await authClient.signOut();
+    router.push("/sign-in");
+    router.refresh();
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -75,9 +89,13 @@ export function AccountMenu({ user, className }: AccountMenuProps) {
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
+        <DropdownMenuItem
+          variant="destructive"
+          disabled={signingOut}
+          onClick={() => void handleSignOut()}
+        >
           <LogOutIcon aria-hidden="true" />
-          Sign out
+          {signingOut ? "Signing out…" : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

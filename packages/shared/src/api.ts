@@ -12,6 +12,8 @@ export const API_ROUTES = {
   health: "/health",
   stats: "/stats",
   activity: "/activity",
+  /** Requires a session — the reference protected route (`requireAuth` in `apps/api`). */
+  me: "/me",
 } as const;
 
 export type ApiRouteName = keyof typeof API_ROUTES;

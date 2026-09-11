@@ -1,7 +1,8 @@
 # Alan Web Master Template
 
 An enterprise UI/UX template — a **pnpm monorepo** pairing a Next.js App
-Router frontend (`apps/web`) with a Bun + Hono API (`apps/api`), their
+Router frontend (`apps/web`) with a Bun + Hono API (`apps/api`) backed by
+Postgres, real authentication (Better Auth) already wired end to end, and
 request/response types shared through `packages/shared`. The frontend ships
 four switchable brand themes, four layout shells (sidebar dashboard, top-nav
 workspace, marketing, auth), a coherent component library, and the
@@ -10,6 +11,7 @@ patterns, ready to build real product pages on top of.
 
 > **Dokumentasi bahasa Indonesia:** [analisis & rekomendasi](docs/analisis-dan-rekomendasi.md) ·
 > [arsitektur monorepo (Next.js + Bun)](docs/arsitektur-monorepo.md) ·
+> [deploy VPS + Vercel](docs/deploy-vps-vercel.md) ·
 > [sistem multi-tema & densitas](docs/multi-tema.md) ·
 > [varian layout](docs/varian-layout.md).
 
@@ -38,12 +40,13 @@ components, themed light/dark tokens, motion primitives that respect
 `prefers-reduced-motion`, branded error/loading boundaries, and monitoring
 hooks that stay dormant until configured.
 
-What it deliberately does **not** include: authentication, a database, or
-business logic. Those are application concerns; see
-[Before you ship](#before-you-ship). It **does** now include a real API
-service (`apps/api`) — a Hono app on Bun with a health check and two
-read-only endpoints that back the dashboard — wired end to end so the
-frontend calls it through React Query with shared types.
+It **does** include a real backend (`apps/api` — Hono on Bun) with real
+**authentication** (Better Auth, email/password, Postgres via Drizzle) and
+a real, protected `/dashboard` — sign up, sign in, and the session actually
+gates the route server-side. What it deliberately does **not** include:
+your product's **business logic and domain data** — the app-specific
+tables, screens and rules only you know. Those are application concerns;
+see [Before you ship](#before-you-ship).
 
 The conventions the template already follows are documented as project
 standards so code added on top stays consistent with it:
@@ -58,7 +61,8 @@ standards so code added on top stays consistent with it:
 | Area           | What you get                                                                                 |
 | -------------- | -------------------------------------------------------------------------------------------- |
 | Workspace      | pnpm monorepo: `apps/web` (Next.js), `apps/api` (Bun + Hono), `packages/shared` (types + API contract). Root scripts run all three |
-| Backend        | `apps/api` — Hono on Bun. `GET /api/v1/health \| /stats \| /activity`, uniform `ApiError` body, CORS, request logging, `bun test` per route. In-memory sample data to swap for real queries |
+| Backend        | `apps/api` — Hono on Bun. `GET /api/v1/health \| /stats \| /activity \| /me`, uniform `ApiError` body, CORS, request logging, `bun test` per route. `/stats` and `/activity` are in-memory sample data to swap for real queries |
+| Auth & database | Real email/password auth (**Better Auth**) backed by **Postgres** (**Drizzle ORM**) in `apps/api`. Session cookie proxied through `apps/web` (first-party, safe cross-domain). `/dashboard` and `/workspace` are protected both at `proxy.ts` and server-component level. See [docs/arsitektur-monorepo.md §7](docs/arsitektur-monorepo.md#7-autentikasi--database-better-auth--drizzle--postgres) |
 | Frontend ↔ API | `apps/web/lib/api-client.ts` (typed fetch, `NEXT_PUBLIC_API_URL`) + `features/metrics/` (React Query hooks); the `/dashboard` "Live data" panel is fetched from the API |
 | Pages          | Landing (`/`) + `/pricing`, `/dashboard`, `/analytics`, `/settings`, `/workspace`, `/sign-in`, `/sign-up`, `/forgot-password`, and `/showcase` — a full component + theme gallery |
 | Layouts        | Four shells: `DashboardLayout` (collapsible sidebar), `TopNavLayout` (horizontal nav), `MarketingLayout` (public header/footer), `AuthLayout` (centered card + split panel). `PageContainer` adds the heading and breadcrumb trail |
@@ -112,6 +116,8 @@ Then:
 | Workspace        | pnpm monorepo — `apps/web`, `apps/api`, `packages/shared` |
 | Frontend         | Next.js 16 (App Router, React 19) on Node          |
 | Backend          | Hono 4 on the Bun runtime (`apps/api`)             |
+| Auth             | Better Auth (email/password), session cookie proxied through `apps/web` |
+| Database         | Postgres via Drizzle ORM (`apps/api`)              |
 | Shared contract  | `@app/shared` — raw TypeScript, imported by both apps |
 | Language         | TypeScript 5 (`strict`)                            |
 | Styling          | Tailwind CSS v4 (`@tailwindcss/postcss`)           |
@@ -133,14 +139,19 @@ Then:
 package.json              Root workspace — dev / build / lint / typecheck / test across all packages
 pnpm-workspace.yaml       packages: apps/*, packages/*
 tsconfig.base.json        Compiler options shared by every package
+docker-compose.yml        Local Postgres for apps/api auth — dev only, not a deployment artifact
 
 packages/shared/          @app/shared — types + API contract (index.ts, api.ts). Raw .ts, no build step
-apps/api/                 @app/api — Bun + Hono. See apps/api/README.md
+apps/api/                 @app/api — Bun + Hono + Better Auth + Drizzle. See apps/api/README.md
   src/index.ts            Bun server entry (`export default { port, fetch }`)
-  src/app.ts              Hono app: CORS + logger middleware, routes, uniform error handling
-  src/data.ts             In-memory sample data — replace with real queries
-  src/app.test.ts         `bun test` coverage for every route
+  src/app.ts              Hono app: CORS, /api/auth mount, routes, uniform error handling
+  src/auth.ts             Better Auth instance (Drizzle adapter, email/password)
+  src/db/schema.ts        Better Auth's core tables (user, session, account, verification)
+  src/middleware/auth.ts  `requireAuth` — protects a route, exposes c.get("user")
+  src/data.ts             In-memory sample data (/stats, /activity) — replace with real queries
+  src/app.test.ts, src/auth.test.ts   `bun test` coverage — auth tests need a migrated Postgres
 apps/web/                 @app/web — the Next.js app (everything below is under apps/web/)
+  proxy.ts                Optimistic auth gate (Next 16's renamed `middleware.ts`) — cookie presence only
 ```
 
 ```
@@ -174,7 +185,7 @@ components/
 features/metrics/         Example feature — fetchers, React Query hooks (useStats/useActivity), LiveMetrics component
 config/                   app.ts, layout.ts (dimensions), navigation.ts (nav items), theme.ts (brand-theme registry)
 hooks/                    use-hydrated, use-ui-store-hydration, use-appearance (brand theme + density)
-lib/                      format.ts, navigation.ts, chart.ts, theme.ts, api-client.ts (typed client for @app/api) — helpers have colocated *.test.ts
+lib/                      format.ts, navigation.ts, chart.ts, theme.ts, api-client.ts (typed client for @app/api), auth-client.ts (Better Auth, browser), auth-server.ts (session lookup, Server Components) — helpers have colocated *.test.ts
 providers/                AppProviders → ThemeProvider → QueryProvider (+ lazy Toaster); MotionProvider
 stores/                   ui-store.ts (Zustand)
 types/                    layout.ts, navigation.ts
@@ -198,10 +209,16 @@ next.config.ts            Security headers (CSP, HSTS, COOP/CORP, X-Frame-Option
   breakpoint live in `config/layout.ts`; the brand-theme registry in
   `config/theme.ts`. Both are consumed as data / CSS custom properties, so a
   consuming app reskins without editing component internals.
-- **Static-first.** Pages prerender at build time. The CSP intentionally
-  uses `'unsafe-inline'` rather than a per-request nonce to preserve that —
-  see [SECURITY.md](SECURITY.md) and [`next.config.ts`](next.config.ts) for
-  the full reasoning.
+- **Static-first where it can be.** Public pages (`/`, `/pricing`,
+  `/sign-in`, `/sign-up`, `/forgot-password`) prerender at build time.
+  `/dashboard`, `/analytics`, `/settings`, `/showcase` and `/workspace` are
+  server-rendered per request (`ƒ` in `next build`'s output) because their
+  layouts call `getServerSession()` — a protected page can't be prerendered
+  once its content or its very access depends on the request's cookies. The
+  CSP intentionally uses `'unsafe-inline'` rather than a per-request nonce
+  to keep the *static* pages nonce-free — see [SECURITY.md](SECURITY.md) and
+  [`apps/web/next.config.ts`](apps/web/next.config.ts) for the full
+  reasoning.
 - **Dormant observability.** Every monitoring integration is gated on an
   environment variable and safely no-ops when unset, so the app behaves
   identically configured or not. See [docs/MONITORING.md](docs/MONITORING.md).
@@ -217,6 +234,7 @@ next.config.ts            Security headers (CSP, HSTS, COOP/CORP, X-Frame-Option
 | Node | `^22.12.0 \|\| ^24.0.0 \|\| >=26.0.0`    | Runtime for `apps/web`. Enforced by `engines`; CI runs Node 24 |
 | pnpm | 11.x (`packageManager` pins `11.25.0`)   | Workspace package manager. `corepack enable` provisions it |
 | Bun  | `>= 1.4`                                 | Runtime for `apps/api` (`bun dev` / `bun test` / `bun build`). [Install](https://bun.sh) |
+| Docker | any recent version                     | Local Postgres for auth (`docker-compose.yml`) — skip if you point `DATABASE_URL` at your own Postgres instead |
 
 ### Install
 
@@ -229,16 +247,34 @@ pnpm install
 
 ### Environment
 
-No environment variables are required to run either app. Each has its own
-`.env.example`:
+No environment variables are required to run either app in dev — both have
+dev-safe defaults (`apps/api/src/env.ts`). Each app has its own
+`.env.example` for when you need to override something:
 
 ```bash
-cp apps/web/.env.example apps/web/.env.local   # NEXT_PUBLIC_API_URL + monitoring
-cp apps/api/.env.example apps/api/.env          # API_PORT, CORS origins
+cp apps/web/.env.example apps/web/.env.local   # NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_URL + monitoring
+cp apps/api/.env.example apps/api/.env          # API_PORT, CORS origins, DATABASE_URL, BETTER_AUTH_SECRET
 ```
 
 See [Environment variables](#environment-variables) for the full list.
 `.env*` files are git-ignored.
+
+### Database
+
+Auth (`/api/auth/*`, sign-up/sign-in, and therefore `/dashboard` +
+`/workspace`) needs Postgres. Everything else (`/`, `/pricing`,
+`/showcase`'s theme gallery, `/dashboard`'s non-auth widgets) works without
+it.
+
+```bash
+docker compose up -d db              # local Postgres on :55432 — matches the dev defaults
+pnpm --filter @app/api db:migrate    # create the auth tables
+```
+
+See [`apps/api/README.md`](apps/api/README.md#database) for the full
+`db:*` script list, and
+[docs/arsitektur-monorepo.md §7](docs/arsitektur-monorepo.md#7-autentikasi--database-better-auth--drizzle--postgres)
+for how auth is wired.
 
 ### First run
 
@@ -247,7 +283,9 @@ pnpm dev
 ```
 
 Starts `apps/web` on <http://localhost:3000> and `apps/api` on
-<http://localhost:3001> together. The `/dashboard` "Live data" panel is
+<http://localhost:3001> together. Visit
+[`/sign-up`](http://localhost:3000/sign-up) to create an account, then
+[`/dashboard`](http://localhost:3000/dashboard) — its "Live data" panel is
 served by the API; run `pnpm dev:web` alone and it shows an error state.
 
 Open <http://localhost:3000> for the landing page.
@@ -351,56 +389,79 @@ see [apps/web/AGENTS.md](apps/web/AGENTS.md).
   theme's tokens with the client's brand); drop the themes you don't ship and
   hide `AppearanceMenu` if the client wants a single look. See
   [docs/multi-tema.md](docs/multi-tema.md).
-- The `(auth)` forms are presentational — wire them to Server Actions and add
-  real session handling.
-- Replace `apps/api/src/data.ts` with real queries (DB / upstream service).
-  The route handlers and web hooks stay unchanged — return types come from
-  `@app/shared`. Add auth middleware to `apps/api` and protect its routes.
+- **Auth and its route protection are real, not a stub** — the `(auth)`
+  forms call Better Auth, `DashboardLayout`'s `user` prop and "Sign out" are
+  wired, and `/dashboard` + `/workspace` are protected server-side (see
+  [docs/arsitektur-monorepo.md §7](docs/arsitektur-monorepo.md#7-autentikasi--database-better-auth--drizzle--postgres)).
+  Still to configure per project: transactional email for password reset
+  (`emailAndPassword.sendResetPassword` in `apps/api/src/auth.ts` is a
+  no-op until you add one), and OAuth/SSO or role/permission plugins if you
+  need them.
+- Replace `apps/api/src/data.ts` (`/stats`, `/activity`) with real queries —
+  add tables next to `apps/api/src/db/schema.ts` and query them with
+  Drizzle. The route handlers and web hooks stay unchanged as long as the
+  return types still come from `@app/shared`.
 - Most `Sparkline` / `BarList` / `StatCard` instances still use hard-coded
   arrays; only the `/dashboard` "Live data" panel is wired to the API. Follow
   that pattern (`features/metrics/`) for the rest.
-- Wire `DashboardLayout`'s `user` prop once authentication exists, so the
-  account menu renders. Its "Sign out" item has no handler yet — by design.
-- Add authentication and server-side route protection. This template has
-  none. See [SECURITY.md](SECURITY.md) for the specifics to address.
+- Before a real production launch, also read [SECURITY.md](SECURITY.md) —
+  auth existing doesn't mean every hardening item there is addressed (rate
+  limiting, audit logging, etc. are project-specific).
 
 ---
 
 ## Deployment
 
 The two apps deploy **separately**: `apps/web` as a Next.js app, `apps/api`
-as a Bun process. Deploy the API first, then build the web app with
-`NEXT_PUBLIC_API_URL` pointing at it.
+as a Bun process with a Postgres database. Deploy the API first (its domain
+has to exist before the web app is built), then the web app.
+
+**Step-by-step walkthrough for a VPS (API + Postgres) + Vercel (web) setup —
+the most common pairing for this template — is
+[docs/deploy-vps-vercel.md](docs/deploy-vps-vercel.md).** The rest of this
+section is the reference version; that doc has the copy-pasteable commands.
 
 ### Prerequisites for any target
 
 1. `pnpm build` passes.
-2. Node matches the `engines` range on the web host; Bun ≥ 1.4 on the API host.
-3. Environment variables are set in each host's environment (not committed).
-   `NEXT_PUBLIC_API_URL` and other `NEXT_PUBLIC_`-prefixed variables are read
-   at **build time** and inlined — set them before `pnpm --filter @app/web
-   build`, and rebuild to change them.
+2. Node matches the `engines` range on the web host; Bun ≥ 1.4 and a
+   reachable Postgres on the API host.
+3. `apps/api` migrations are applied (`pnpm --filter @app/api db:migrate`)
+   against the production `DATABASE_URL` before first traffic.
+4. Environment variables are set in each host's environment (not committed).
+   `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_APP_URL` and other `NEXT_PUBLIC_`-
+   prefixed variables are read at **build time** and inlined — set them
+   before `pnpm --filter @app/web build`, and rebuild to change them.
+   `DATABASE_URL` and `BETTER_AUTH_SECRET` are **required** once
+   `apps/api` runs with `NODE_ENV=production` — it refuses to start
+   without them.
 
 ### apps/web — Vercel (zero-config)
 
 Import the repo, set the **Root Directory** to `apps/web` (Vercel then runs
-the workspace install and `next build`). Set `NEXT_PUBLIC_API_URL` and any
-monitoring vars in **Project → Settings → Environment Variables**. Turn on
-**Project → Analytics** to activate the present `<Analytics />`.
+the workspace install and `next build`). Set `NEXT_PUBLIC_API_URL`,
+`NEXT_PUBLIC_APP_URL` and any monitoring vars in **Project → Settings →
+Environment Variables**. Turn on **Project → Analytics** to activate the
+present `<Analytics />`.
 
-### apps/api — any Bun host
+### apps/api — any Bun host (VPS, container, Railway, Fly.io, ...)
 
 ```bash
 pnpm install --frozen-lockfile
+pnpm --filter @app/api db:migrate     # apply the auth schema to DATABASE_URL
 pnpm --filter @app/api build          # → apps/api/dist/index.js
-cd apps/api && bun run dist/index.js  # honors API_PORT, API_ALLOWED_ORIGINS, NODE_ENV
+cd apps/api && bun run dist/index.js  # honors API_PORT, API_ALLOWED_ORIGINS, DATABASE_URL, BETTER_AUTH_SECRET, NODE_ENV
 ```
 
-Works on a container (`oven/bun` base image), Railway, Fly.io, or a VM. Set
-`API_ALLOWED_ORIGINS` to the deployed web origin, and add that API origin to
-`connect-src` — it is derived from `NEXT_PUBLIC_API_URL` in
-[`apps/web/next.config.ts`](apps/web/next.config.ts), so setting that var is
-usually enough.
+Needs a reachable Postgres (`DATABASE_URL`) — self-hosted on the same VPS,
+or managed (Neon, Supabase, RDS, ...). Set `API_ALLOWED_ORIGINS` and
+`API_PUBLIC_URL` to the deployed web/API origins, and generate a real
+`BETTER_AUTH_SECRET` (`openssl rand -base64 32` — never the dev default).
+The API's own origin also has to land in `apps/web`'s CSP `connect-src`,
+which happens automatically from `NEXT_PUBLIC_API_URL` — see
+[`apps/web/next.config.ts`](apps/web/next.config.ts). Full walkthrough
+(systemd unit, Caddy reverse proxy, verification checklist):
+[docs/deploy-vps-vercel.md](docs/deploy-vps-vercel.md).
 
 ### apps/web — Node server / container
 
@@ -446,7 +507,8 @@ Every variable is **optional** — both apps run with none set. Copy
 
 | Variable                         | Purpose                                          | Where it's read                                              | Default when unset            |
 | -------------------------------- | ----------------------------------------------- | ---------------------------------------------------------- | ----------------------------- |
-| `NEXT_PUBLIC_API_URL`            | Origin of `apps/api`; also feeds CSP `connect-src` | `lib/api-client.ts`, `next.config.ts`                    | `http://localhost:3001`       |
+| `NEXT_PUBLIC_API_URL`            | Origin of `apps/api`; feeds the `/api/auth` rewrite and CSP `connect-src` | `lib/api-client.ts`, `lib/auth-server.ts`, `next.config.ts` | `http://localhost:3001`   |
+| `NEXT_PUBLIC_APP_URL`            | This app's own public origin — required by Better Auth's browser client | `lib/auth-client.ts`                       | `http://localhost:3000`       |
 | `NEXT_PUBLIC_SENTRY_DSN`         | Sentry error tracking + performance tracing     | `instrumentation.ts`, `instrumentation-client.ts`, error boundaries | Sentry disabled (SDK no-ops)  |
 | `NEXT_PUBLIC_CLARITY_PROJECT_ID` | Microsoft Clarity session replay + heatmaps     | `instrumentation-client.ts`                                 | Clarity snippet not injected  |
 | _(none)_ Vercel Analytics        | Page views + custom events                      | `app/layout.tsx` (`<Analytics />`)                          | No-op off Vercel / until enabled in dashboard |
@@ -456,8 +518,11 @@ Every variable is **optional** — both apps run with none set. Copy
 | Variable               | Purpose                                            | Default when unset        |
 | ---------------------- | ------------------------------------------------- | ------------------------- |
 | `API_PORT`             | Port the Bun server binds to                       | `3001`                    |
-| `API_ALLOWED_ORIGINS`  | Comma-separated CORS allowlist (enforced in prod)  | `http://localhost:3000`   |
-| `NODE_ENV`             | `production` tightens CORS + hides error detail    | `development`             |
+| `API_ALLOWED_ORIGINS`  | Comma-separated CORS allowlist, also the Better Auth trusted-origins list (enforced in prod) | `http://localhost:3000` |
+| `API_PUBLIC_URL`       | This API's own public origin — Better Auth uses it to build cookie/callback URLs | `http://localhost:3001` |
+| `DATABASE_URL`         | Postgres connection string                         | Local dev default; **required** in production |
+| `BETTER_AUTH_SECRET`   | Signs/encrypts session tokens — `openssl rand -base64 32` | Fixed dev value; **required** in production |
+| `NODE_ENV`             | `production` tightens CORS, enforces the two required vars above, hides error detail, sets the session cookie `SameSite=None; Secure` | `development` |
 
 Notes:
 

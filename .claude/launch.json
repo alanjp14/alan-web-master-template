@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@app/web", "dev"],
       "port": 3000
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@app/api", "dev"],
+      "port": 3001
     }
   ]
 }

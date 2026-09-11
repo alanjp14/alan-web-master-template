@@ -19,6 +19,25 @@ jobs:
   validate:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
+    # apps/api's auth tests (src/auth.test.ts) exercise the real Better Auth
+    # + Drizzle + Postgres stack, not a mock — this service container is
+    # that Postgres. Matches apps/api/.env.example's dev default.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://app:app@localhost:55432/app
     steps:
       # Actions are pinned to a full commit SHA (not a moving tag) so a
       # compromised or force-pushed tag can't silently change what runs in CI.
@@ -53,6 +72,9 @@ jobs:
 
       - name: Typecheck
         run: pnpm -r typecheck
+
+      - name: Migrate test database
+        run: pnpm --filter @app/api db:migrate
 
       - name: Test
         run: pnpm -r test

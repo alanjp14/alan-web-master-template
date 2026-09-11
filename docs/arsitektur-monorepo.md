@@ -113,22 +113,112 @@ Prasyarat: **Node** `^22.12 || ^24 || >=26` dan **Bun** `>= 1.4`.
 ## 6. Deployment
 
 - **`apps/web`** — sama seperti sebelumnya (Vercel zero-config, atau
-  `next start` di Node/kontainer). Set `NEXT_PUBLIC_API_URL` ke origin API
-  produksi **sebelum** `pnpm build` (di-inline saat build).
+  `next start` di Node/kontainer). Set `NEXT_PUBLIC_API_URL`,
+  `NEXT_PUBLIC_APP_URL` ke origin API/web produksi **sebelum** `pnpm build`
+  (di-inline saat build).
 - **`apps/api`** — host apa pun yang menjalankan Bun: `bun run build` →
   `dist/index.js`, atau `bun src/index.ts` langsung. Set `API_PORT`,
-  `API_ALLOWED_ORIGINS`, `NODE_ENV=production`. Cocok untuk kontainer
+  `API_ALLOWED_ORIGINS`, `API_PUBLIC_URL`, `DATABASE_URL`,
+  `BETTER_AUTH_SECRET`, `NODE_ENV=production`. Cocok untuk kontainer
   (`oven/bun` base image), Railway, Fly.io, atau VM.
 - Tambahkan origin Sentry ke `connect-src` bila DSN diaktifkan (lihat
   `next.config.ts`).
+- Panduan langkah-demi-langkah untuk **VPS (apps/api + Postgres) + Vercel
+  (apps/web)**: [docs/deploy-vps-vercel.md](deploy-vps-vercel.md).
 
 ---
 
-## 7. Langkah lanjutan yang disarankan
+## 7. Autentikasi & database (Better Auth + Drizzle + Postgres)
 
-1. Ganti `apps/api/src/data.ts` dengan sumber data nyata (DB / service).
-2. Tambah autentikasi: middleware Hono untuk verifikasi token di `apps/api`,
-   dan proteksi route sisi-server di `apps/web`.
+Ditambahkan di sesi berikutnya — jawaban atas "apakah template ini siap
+dipakai untuk project Go-Live?" (lihat adendum di
+[docs/analisis-dan-rekomendasi.md](analisis-dan-rekomendasi.md)).
+
+### Kenapa Better Auth
+
+- TypeScript-first, tidak terikat vendor (self-hosted, jalan di Bun/Hono).
+- Dukungan Drizzle bawaan (`better-auth/adapters/drizzle`) — schema Postgres
+  dipetakan langsung dari `apps/api/src/db/schema.ts`.
+- Klien React (`better-auth/react`) memberi `useSession`, `signIn`,
+  `signUp`, `signOut` yang type-safe tanpa boilerplate context/provider.
+
+### Arsitektur cookie: proxy, bukan cross-origin
+
+`apps/web` dan `apps/api` adalah origin berbeda (beda port di dev, sering
+beda domain di produksi — mis. Vercel + VPS). Alih-alih membuat sesi
+cross-site (butuh `SameSite=None; Secure`, rawan diblokir kebijakan
+third-party-cookie browser), template ini memakai **Next.js rewrite**:
+
+```
+Browser → POST /api/auth/sign-in/email → (origin: apps/web)
+        ↳ next.config.ts rewrites() → apps/api (server-to-server)
+        ↳ Set-Cookie kembali ke browser, tampak first-party ke apps/web
+```
+
+- `apps/web/next.config.ts` — `rewrites()` memetakan `/api/auth/:path*` ke
+  origin `apps/api` (dari `NEXT_PUBLIC_API_URL`).
+- `apps/web/lib/auth-client.ts` — klien browser, `baseURL` = URL publik
+  **web app sendiri** (`NEXT_PUBLIC_APP_URL`), bukan API.
+- `apps/web/lib/auth-server.ts` — untuk Server Component/layout: fetch
+  langsung ke origin API (bukan lewat rewrite — rewrite hanya berlaku untuk
+  request dari browser ke server Next), meneruskan header `Cookie` apa
+  adanya.
+
+### Dua lapis proteksi route
+
+1. **`apps/web/proxy.ts`** (dulu `middleware.ts` — lihat catatan Next 16 di
+   bawah) — cek *keberadaan* cookie sesi saja (`getSessionCookie`, tanpa
+   query DB), redirect ke `/sign-in?redirect=...` bila tidak ada. Cepat,
+   tapi **bukan** pemeriksaan keamanan sesungguhnya — cookie palsu lolos
+   tahap ini.
+2. **`app/(dashboard)/layout.tsx`, `app/(topnav)/layout.tsx`** — memanggil
+   `getServerSession()` (hit ke `apps/api`, yang memvalidasi ke Postgres)
+   dan `redirect("/sign-in")` bila sesi tidak valid. Ini lapis yang
+   sesungguhnya melindungi data.
+
+Pola yang sama di backend: `apps/api/src/middleware/auth.ts` menyediakan
+`requireAuth` — tempel ke route Hono mana pun yang butuh caller
+ter-otentikasi (`GET /api/v1/me` adalah contoh referensinya).
+
+### Catatan Next.js 16: `middleware.ts` → `proxy.ts`
+
+Next 16 mengganti nama konvensi file `middleware.ts` menjadi `proxy.ts`
+(fungsi `middleware()` → `proxy()`) — lihat
+`apps/web/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md`.
+Proxy juga kini default ke runtime Node.js (dulu Edge), tapi pola
+"cek cookie saja, validasi sesungguhnya di layout" tetap yang disarankan
+Better Auth — query DB per-request di setiap route tetap mahal meski
+runtime-nya sudah Node.
+
+### Skema database
+
+Empat tabel inti Better Auth di `apps/api/src/db/schema.ts`: `user`,
+`session`, `account`, `verification` — ditulis tangan agar sama persis
+dengan yang dihasilkan `@better-auth/cli generate`. Migrasi SQL di
+`apps/api/drizzle/`, dikelola `drizzle-kit` (lihat `apps/api/README.md`
+bagian Database). Tambahkan tabel domain Anda sendiri sebagai file baru di
+`apps/api/src/db/`.
+
+### Yang belum ada (sengaja)
+
+- **Pengiriman email** untuk reset password / verifikasi email —
+  `emailAndPassword.sendResetPassword` di `apps/api/src/auth.ts` belum
+  dikonfigurasi, mengikuti pola "dorman sampai dikonfigurasi" yang sama
+  dengan Sentry/Clarity (lihat `docs/MONITORING.md`).
+- **OAuth / SSO** — tinggal tambah `socialProviders` di `auth.ts`; skema
+  `account` sudah menampungnya.
+- **Role/permission** — Better Auth punya plugin `admin`/`organization`
+  untuk ini bila dibutuhkan.
+
+---
+
+## 8. Langkah lanjutan yang disarankan
+
+1. ~~Ganti `apps/api/src/data.ts` dengan sumber data nyata~~ — `/stats` dan
+   `/activity` masih data contoh; auth (§7) sudah memakai Postgres nyata.
+   Ganti `data.ts` saat menambah fitur produk sungguhan.
+2. ~~Tambah autentikasi~~ — selesai (§7). Lanjutkan dengan verifikasi email
+   dan/atau OAuth sesuai kebutuhan client project.
 3. Pertimbangkan **Hono RPC** (`hc<typeof app>`) untuk klien yang tipenya
    diturunkan langsung dari definisi route, menggantikan `lib/api-client.ts`
    manual.

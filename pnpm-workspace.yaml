@@ -8,5 +8,9 @@ allowBuilds:
   # CLI — see docs/MONITORING.md. Its postinstall just downloads that CLI's
   # platform binary, which would otherwise go unused.
   "@sentry/cli": false
+  # Needed: drizzle-kit's postinstall build step (used to generate/push SQL
+  # migrations in apps/api). esbuild is a widely-trusted, actively
+  # maintained bundler — safe to allow its install script.
+  esbuild: true
   sharp: false
   unrs-resolver: false

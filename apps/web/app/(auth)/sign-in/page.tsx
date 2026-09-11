@@ -34,12 +34,13 @@ export default function SignInPage() {
             aria-hidden="true"
           />
           <p className="font-heading text-2xl font-medium text-balance">
-            The auth screens are layout, not logic.
+            Real sessions, not a demo.
           </p>
           <p className="text-sm text-muted-foreground text-pretty">
-            `AuthLayout` gives you the centered card, the optional split panel,
-            the brand mark and the theme controls. Bring your own provider and
-            wire the form to a Server Action.
+            This form calls Better Auth (`apps/api`) over email/password — a
+            signed-in session protects every `/dashboard` route server-side.
+            `AuthLayout` still gives you the centered card, the optional
+            split panel, the brand mark and the theme controls to restyle.
           </p>
         </div>
       }

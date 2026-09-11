@@ -59,6 +59,16 @@ const nextConfig: NextConfig = {
   // app's own source.
   transpilePackages: ["@app/shared"],
 
+  // Proxies Better Auth's endpoints through this app's own origin so the
+  // session cookie the browser receives is first-party (see
+  // lib/auth-client.ts and docs/arsitektur-monorepo.md). This is a
+  // server-side rewrite done by the Next server itself at request time — it
+  // doesn't require any page to become dynamically rendered, so the
+  // static-first prerendering described below is unaffected.
+  async rewrites() {
+    return [{ source: "/api/auth/:path*", destination: `${apiOrigin}/api/auth/:path*` }];
+  },
+
   async headers() {
     return [
       {

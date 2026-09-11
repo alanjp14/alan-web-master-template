@@ -36,11 +36,18 @@ leaves to the consuming app.
 
 ### Left to the consuming app (see [README's "Before you ship"](README.md#before-you-ship))
 
-- **Authentication and server-side authorization.** The template has none.
-  `DashboardLayout`'s `user` prop only toggles UI. Protect routes in
-  middleware or a layout, never by hiding a menu.
-- **Input validation.** Validate and sanitize every Server Action / Route
-  Handler input server-side; never trust a client-shown `FieldError`.
+- **Authentication and server-side authorization are wired** (Better Auth +
+  Postgres, `apps/api`), but scoped to what a generic template can provide:
+  email/password only, no rate limiting on auth endpoints, no audit
+  logging, and `requireAuth` (`apps/api/src/middleware/auth.ts`) checks
+  only "is there a valid session" — role/permission checks for your
+  domain's data are still yours to add (Better Auth's `admin`/
+  `organization` plugins, or your own). Add rate limiting (Hono has
+  middleware for this) before exposing `/api/auth/*` publicly at scale.
+- **Input validation.** Validate and sanitize every Hono route / Server
+  Action input server-side; never trust a client-shown `FieldError`. Better
+  Auth validates its own auth payloads; your own `/api/v1/*` routes don't
+  get that for free.
 - **The Sentry CSP host.** Setting a real `NEXT_PUBLIC_SENTRY_DSN` also means
   adding its ingest host to `connect-src` in `next.config.ts`.
 - **Branch protection.** Turn on "require a pull request", "require review

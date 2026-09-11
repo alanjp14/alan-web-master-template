@@ -22,6 +22,31 @@ Pertanyaan inti: **apakah template ini menyediakan banyak opsi tampilan
 > dari API Bun via React Query. Detail lengkap:
 > [docs/arsitektur-monorepo.md](arsitektur-monorepo.md).
 
+> **Adendum 2 (sesi berikutnya) — kesiapan Go-Live.**
+> Pertanyaan lanjutan: *apakah template ini sudah siap dipakai untuk project
+> baru maupun project yang sudah Go-Live di VPS/Vercel?*
+>
+> Saat ditinjau: UI/UX dan struktur monorepo sudah matang, tapi **tidak ada
+> autentikasi dan tidak ada database** — dua syarat mutlak sebelum
+> production nyata.
+>
+> **Sudah dikerjakan:** autentikasi email/password nyata (**Better Auth**)
+> + **Postgres** (**Drizzle ORM**) di `apps/api`, sesi cookie diproksikan
+> lewat `apps/web` (first-party, aman lintas domain VPS+Vercel), dua route
+> group dashboard diproteksi di level proxy *dan* server component, form
+> sign-in/sign-up/sign-out nyata (bukan lagi demo `toast`). Diverifikasi
+> end-to-end: migrasi Postgres berjalan, 9 test backend (termasuk alur auth
+> penuh) lolos, dan alur sign-up → dashboard → sign-out teruji langsung di
+> browser. Panduan deploy VPS (API) + Vercel (web):
+> [docs/deploy-vps-vercel.md](deploy-vps-vercel.md); detail arsitektur di
+> §7 [docs/arsitektur-monorepo.md](arsitektur-monorepo.md#7-autentikasi--database-better-auth--drizzle--postgres).
+>
+> **Masih sengaja belum ada** (lihat §7 di atas): pengiriman email
+> (verifikasi/reset password), OAuth/SSO, role & permission, dan tentu saja
+> — logika bisnis/domain spesifik project Anda. Itu semua bergantung pada
+> kebutuhan tiap client project dan sengaja di luar cakupan "master
+> template".
+
 ---
 
 ## 1. Ringkasan temuan awal (sebelum sesi ini)

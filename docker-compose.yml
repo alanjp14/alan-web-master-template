@@ -1,0 +1,28 @@
+name: alan-web-master-template
+
+# Local development only — a single Postgres instance for `apps/api`. The
+# port (55432, not 5432) and credentials here match `apps/api/.env.example`'s
+# dev default and `apps/api/src/env.ts`'s fallback, so `apps/api` needs no
+# `.env` file to talk to it. Production points DATABASE_URL at a real,
+# managed or self-hosted Postgres instead — this file is not a deployment
+# artifact.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    ports:
+      - "55432:5432"
+    volumes:
+      - awmt-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  awmt-postgres-data:

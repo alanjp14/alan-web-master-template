@@ -36,6 +36,13 @@ export interface Activity {
   breakdown: BreakdownItem[];
 }
 
+/** `GET /api/v1/me` response — the signed-in user, trimmed to what the UI needs. */
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 /** `GET /api/v1/health` response. */
 export interface Health {
   status: "ok";

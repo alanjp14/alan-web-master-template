@@ -24,10 +24,23 @@ This is a **pnpm workspace monorepo**, not a single app.
   `pnpm -r typecheck`, `pnpm -r test`, `pnpm build`. CI runs exactly these.
 - Package manager is **pnpm** for the workspace; `bun` is the runtime for
   `apps/api` only. Never run `npm install`.
+- **Auth is real** (Better Auth + Postgres/Drizzle in `apps/api`) — don't
+  reintroduce a stub. New protected API routes get `requireAuth`
+  (`apps/api/src/middleware/auth.ts`); new protected pages add their path to
+  `apps/web/proxy.ts`'s `PROTECTED_PATHS` *and* call `getServerSession()` in
+  their layout (the proxy check alone is not a security boundary — see
+  `docs/arsitektur-monorepo.md` §7).
+- `apps/api/src/db/schema.ts` holds only Better Auth's own tables — add
+  domain tables in sibling files, run `db:generate` then `db:migrate`
+  (`pnpm --filter @app/api db:generate|db:migrate`). Never hand-edit files
+  under `apps/api/drizzle/` (generated SQL).
+- `bun test` for `apps/api/src/auth.test.ts` needs a migrated Postgres —
+  `docker compose up -d db && pnpm --filter @app/api db:migrate` first.
 
 ## Where things live
 
 - Frontend conventions, folder standards, component rules: `docs/standards/`
   and `apps/web/AGENTS.md`.
 - Monorepo architecture rationale: `docs/arsitektur-monorepo.md` (Indonesian).
-- API surface: `apps/api/README.md`.
+- API surface + database scripts: `apps/api/README.md`.
+- Deploying to a VPS (API + Postgres) + Vercel (web): `docs/deploy-vps-vercel.md` (Indonesian).
