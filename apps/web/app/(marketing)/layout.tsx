@@ -19,31 +19,35 @@ export default function MarketingRouteLayout({
     <MarketingLayout
       footerGroups={[
         {
-          title: "Product",
+          title: "Layanan & Solusi",
           links: [
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Analytics", href: "/analytics" },
-            { label: "Pricing", href: "/pricing" },
+            { label: "Cloud & DevOps", href: "/#services" },
+            { label: "Enterprise Software", href: "/#services" },
+            { label: "Cyber Security", href: "/#services" },
+            { label: "Web Tools IT", href: "/tools" },
           ],
         },
         {
-          title: "Design system",
+          title: "Aplikasi & Platform",
           links: [
-            { label: "Component showcase", href: "/showcase" },
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Analytics", href: "/analytics" },
+            { label: "Workspace Top-Nav", href: "/workspace" },
+            { label: "Harga", href: "/pricing" },
+          ],
+        },
+        {
+          title: "Design System",
+          links: [
+            { label: "Component Showcase", href: "/showcase" },
             { label: "Settings", href: "/settings" },
           ],
         },
         {
-          title: "Account",
+          title: "Akun",
           links: [
             { label: "Sign in", href: "/sign-in" },
             { label: "Create account", href: "/sign-up" },
-          ],
-        },
-        {
-          title: "Layouts",
-          links: [
-            { label: "Top-nav workspace", href: "/workspace" },
           ],
         },
       ]}

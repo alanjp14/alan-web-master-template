@@ -1,4 +1,4 @@
-import { LayoutDashboard, LineChart, Palette, Settings } from "lucide-react";
+import { LayoutDashboard, LineChart, Palette, Settings, Terminal } from "lucide-react";
 
 import type { MarketingLink, NavItem, NavSection } from "@/types/navigation";
 
@@ -19,6 +19,16 @@ export const mainNavigation: NavSection[] = [
         title: "Analytics",
         href: "/analytics",
         icon: LineChart,
+      },
+    ],
+  },
+  {
+    label: "Utilitas IT",
+    items: [
+      {
+        title: "Web Tools IT",
+        href: "/tools",
+        icon: Terminal,
       },
     ],
   },
@@ -60,7 +70,10 @@ export const mobileNavigation: NavItem[] = mainNavigation
  * when you replace the showcase pages.
  */
 export const marketingNavigation: MarketingLink[] = [
-  { label: "Pricing", href: "/pricing" },
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "Layanan IT", href: "/#services" },
+  { label: "Portofolio", href: "/#portfolio" },
+  { label: "Web Tools IT", href: "/tools" },
+  { label: "Harga", href: "/pricing" },
   { label: "Showcase", href: "/showcase" },
 ];
+

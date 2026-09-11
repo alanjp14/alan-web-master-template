@@ -14,6 +14,11 @@ export const API_ROUTES = {
   activity: "/activity",
   /** Requires a session — the reference protected route (`requireAuth` in `apps/api`). */
   me: "/me",
+  /** IT Web Tools endpoints */
+  dnsLookup: "/tools/dns-lookup",
+  sslCheck: "/tools/ssl-check",
+  httpStatus: "/tools/http-status",
+  subnetCalc: "/tools/subnet-calc",
 } as const;
 
 export type ApiRouteName = keyof typeof API_ROUTES;

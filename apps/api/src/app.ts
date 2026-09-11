@@ -14,6 +14,7 @@ import { auth } from "./auth";
 import { getActivity, getStats } from "./data";
 import { env } from "./env";
 import { requireAuth, type AuthVariables } from "./middleware/auth";
+import { toolsRouter } from "./tools";
 
 export const API_VERSION = "0.1.0";
 
@@ -73,6 +74,8 @@ v1.get(API_ROUTES.me, requireAuth, (c) => {
   const user = c.get("user");
   return c.json({ id: user.id, name: user.name, email: user.email });
 });
+
+v1.route("/tools", toolsRouter);
 
 app.route(API_BASE_PATH, v1);
 

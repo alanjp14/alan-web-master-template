@@ -7,6 +7,7 @@
  */
 
 export * from "./api";
+export * from "./tools";
 
 /** Direction of a metric's period-over-period change. */
 export type Trend = "up" | "down" | "flat";

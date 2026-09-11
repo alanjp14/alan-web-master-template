@@ -7,6 +7,7 @@ import {
   PercentIcon,
   ServerIcon,
   UsersIcon,
+  ZapIcon,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -17,7 +18,11 @@ import {
   SectionHeader,
   Sparkline,
   StatCard,
+  TiltCard3D,
+  AnimatedCounter,
+  LivePulseRadar,
 } from "@/components/dashboard";
+import { ServerRack3D } from "@/components/3d";
 import { PageContainer } from "@/components/layout";
 import { FadeIn, SlideIn, StaggerContainer } from "@/components/motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -85,6 +90,125 @@ export default function DashboardPage() {
             icon={ActivityIcon}
           />
           <LiveMetrics />
+        </section>
+
+        {/* 3D Infrastructure Status & Interactive KPI Section */}
+        <section className="space-y-4">
+          <SectionHeader
+            title="3D Infrastructure & Animated KPI"
+            description="Interactive 3D tilt cards, real-time animated counters, and 3D isometric cluster visualizer."
+            icon={ServerIcon}
+          />
+          <div className="grid grid-cols-1 gap-4 @lg:grid-cols-2 @[68rem]:grid-cols-4">
+            <TiltCard3D>
+              <div className="p-5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">
+                    Cluster Throughput
+                  </span>
+                  <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <ActivityIcon className="size-4" />
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">
+                  <AnimatedCounter value={12450} suffix=" req/s" />
+                </div>
+                <p className="text-xs text-muted-foreground">Bun.js High-Concurrency Engine</p>
+              </div>
+            </TiltCard3D>
+
+            <TiltCard3D>
+              <div className="p-5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">
+                    Core API Latency
+                  </span>
+                  <span className="grid size-8 place-items-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                    <ZapIcon className="size-4" />
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">
+                  <AnimatedCounter value={11.8} decimals={1} suffix=" ms" />
+                </div>
+                <p className="text-xs text-muted-foreground">p99 response time</p>
+              </div>
+            </TiltCard3D>
+
+            <TiltCard3D>
+              <div className="p-5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">
+                    Active Cloud Nodes
+                  </span>
+                  <span className="grid size-8 place-items-center rounded-lg bg-blue-500/10 text-blue-500">
+                    <ServerIcon className="size-4" />
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">
+                  <AnimatedCounter value={24} suffix=" Nodes" />
+                </div>
+                <p className="text-xs text-muted-foreground">Kubernetes Cluster Online</p>
+              </div>
+            </TiltCard3D>
+
+            <TiltCard3D>
+              <div className="p-5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">
+                    System Health & Security
+                  </span>
+                  <span className="grid size-8 place-items-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                    <DatabaseIcon className="size-4" />
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">
+                  <AnimatedCounter value={100} suffix="%" />
+                </div>
+                <p className="text-xs text-muted-foreground">Zero vulnerabilities detected</p>
+              </div>
+            </TiltCard3D>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 @lg:grid-cols-3">
+            <div className="rounded-xl border border-border bg-card p-5 @lg:col-span-2 flex flex-col justify-between">
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <ServerIcon className="size-4 text-primary" />
+                    3D Cluster Rack Visualizer
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Live isometric server status with real-time I/O activity LEDs & 3D mouse tilt.
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-xs text-emerald-500 border-emerald-500/30">
+                  All Systems Operational
+                </Badge>
+              </div>
+              <div className="h-56 w-full pt-2">
+                <ServerRack3D serversCount={5} />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between">
+              <div className="border-b border-border/60 pb-3">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <ActivityIcon className="size-4 text-emerald-500" />
+                  Live Security & Packet Radar
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  360-degree real-time network anomaly scanner.
+                </p>
+              </div>
+              <div className="h-44 w-full my-auto">
+                <LivePulseRadar />
+              </div>
+              <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+                <span>0 Anomalies Detected</span>
+                <span className="font-mono text-emerald-500 font-medium">SCAN ACTIVE</span>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="space-y-4">

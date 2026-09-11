@@ -18,3 +18,7 @@ export {
   type Trend,
   type TrendIndicatorProps,
 } from "./TrendIndicator";
+export { TiltCard3D, type TiltCard3DProps } from "./TiltCard3D";
+export { AnimatedCounter, type AnimatedCounterProps } from "./AnimatedCounter";
+export { LivePulseRadar, type LivePulseRadarProps } from "./LivePulseRadar";
+
