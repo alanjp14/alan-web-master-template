@@ -36,6 +36,11 @@ export const mainNavigation: NavSection[] = [
     label: "Design system",
     items: [
       {
+        title: "Pilihan Draft Client",
+        href: "/drafts",
+        icon: Palette,
+      },
+      {
         title: "Showcase",
         href: "/showcase",
         icon: Palette,
@@ -70,6 +75,7 @@ export const mobileNavigation: NavItem[] = mainNavigation
  * when you replace the showcase pages.
  */
 export const marketingNavigation: MarketingLink[] = [
+  { label: "Pilihan Draft", href: "/drafts" },
   { label: "Layanan IT", href: "/#services" },
   { label: "Portofolio", href: "/#portfolio" },
   { label: "Web Tools IT", href: "/tools" },
