@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { CheckIcon, CopyIcon, SparklesIcon, CheckCircle2Icon } from "lucide-react";
+import { CheckIcon, CopyIcon, SparklesIcon, CheckCircle2Icon, BoxIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import type { DraftPreset } from "@/config/draft-presets";
+import type { Animation3DItem } from "@/components/3d/Animation3DGallery";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,29 +24,34 @@ interface DraftSummaryModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   preset: DraftPreset;
+  selectedAnimation?: Animation3DItem | null;
 }
 
 export function DraftSummaryModal({
   open,
   onOpenChange,
   preset,
+  selectedAnimation,
 }: DraftSummaryModalProps) {
   const { theme } = useAppearance();
   const [copied, setCopied] = useState(false);
 
   const formattedSummary = `===========================================
-RINGKASAN PILIHAN DRAFT PRESET CLIENT
+RINGKASAN PILIHAN DRAFT PRESET & ANIMASI 3D CLIENT
 ===========================================
-Nama Preset   : ${preset.title}
-Target        : ${preset.targetAudience}
-Tema Warna    : ${theme.toUpperCase()} (Rekomendasi: ${preset.recommendedTheme.toUpperCase()})
-Layout Shell  : ${preset.layoutType.toUpperCase()}
+Nama Preset       : ${preset.title}
+Target Segmentasi : ${preset.targetAudience}
+Tema Warna        : ${theme.toUpperCase()} (Rekomendasi: ${preset.recommendedTheme.toUpperCase()})
+Layout Shell      : ${preset.layoutType.toUpperCase()}
+Animasi 3D Pilihan: ${selectedAnimation ? `${selectedAnimation.name} (${selectedAnimation.badge})` : "3D Tech Globe / Sesuai Preset"}
 
 Fitur Utama yang Dipilih:
 ${preset.keyFeatures.map((f) => ` - [x] ${f}`).join("\n")}
+${selectedAnimation ? ` - [x] Visualisasi 3D: ${selectedAnimation.name} (${selectedAnimation.category})\n   Spesifikasi: ${selectedAnimation.technicalSpecs}` : ""}
 
-Catatan Tambahan:
+Catatan Implementasi:
 - Menggunakan arsitektur Next.js 16 + Bun.js API
+- Engine 3D Canvas native tanpa dependensi Three.js berat (< 4KB, 60 FPS)
 - Siap di-deploy & dikembangkan lebih lanjut.
 ===========================================`;
 
@@ -74,6 +80,12 @@ Catatan Tambahan:
             <Badge variant="secondary" className="capitalize">
               Tema: {theme}
             </Badge>
+            {selectedAnimation && (
+              <Badge variant="outline" className="gap-1 border-emerald-500/40 text-emerald-500">
+                <BoxIcon className="size-3" />
+                {selectedAnimation.badge}
+              </Badge>
+            )}
           </div>
           <DialogTitle className="text-xl sm:text-2xl font-bold font-heading">
             {preset.title}
@@ -107,6 +119,17 @@ Catatan Tambahan:
               </p>
             </div>
           </div>
+
+          {selectedAnimation && (
+            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-1.5">
+              <span className="text-xs text-emerald-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <BoxIcon className="size-3.5" />
+                Animasi 3D yang Terpilih:
+              </span>
+              <p className="font-semibold text-foreground text-sm">{selectedAnimation.name}</p>
+              <p className="text-xs text-muted-foreground">{selectedAnimation.businessFunction}</p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <span className="font-semibold text-foreground block">Fitur & Modul Utama:</span>

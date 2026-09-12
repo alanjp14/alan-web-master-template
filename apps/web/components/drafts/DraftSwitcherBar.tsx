@@ -10,10 +10,12 @@ import {
   SmartphoneIcon,
   SparklesIcon,
   TabletIcon,
-  ExternalLinkIcon,
+  LayersIcon,
+  BoxIcon,
 } from "lucide-react";
 
 import { DRAFT_PRESETS, type DraftPreset } from "@/config/draft-presets";
+import { type Animation3DItem } from "@/components/3d/Animation3DGallery";
 import { useAppearance } from "@/hooks/use-appearance";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,12 +31,16 @@ import { DraftSummaryModal } from "./DraftSummaryModal";
 import { cn } from "cn";
 
 export type ViewportMode = "desktop" | "tablet" | "mobile";
+export type ShowcaseTab = "templates" | "3d";
 
 interface DraftSwitcherBarProps {
   activePreset: DraftPreset;
   onSelectPreset: (preset: DraftPreset) => void;
   viewportMode: ViewportMode;
   onViewportChange: (mode: ViewportMode) => void;
+  activeTab: ShowcaseTab;
+  onTabChange: (tab: ShowcaseTab) => void;
+  selectedAnimation?: Animation3DItem | null;
 }
 
 export function DraftSwitcherBar({
@@ -42,6 +48,9 @@ export function DraftSwitcherBar({
   onSelectPreset,
   viewportMode,
   onViewportChange,
+  activeTab,
+  onTabChange,
+  selectedAnimation,
 }: DraftSwitcherBarProps) {
   const { theme, setTheme, themes } = useAppearance();
   const [modalOpen, setModalOpen] = useState(false);
@@ -50,122 +59,158 @@ export function DraftSwitcherBar({
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 shadow-xs">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-          {/* Left: Draft Preset Selector Dropdown */}
+          {/* Left: Mode Switcher Tabs + Preset Dropdown */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 pr-3 border-r border-border">
               <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-xs">
-                DRAFT
+                DEMO
               </span>
               <span className="font-heading font-semibold text-sm tracking-tight">
                 Client Preview
               </span>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    className="gap-2 font-medium text-xs sm:text-sm bg-accent/30 border-primary/30"
-                  />
-                }
+            {/* Mode Switcher Pills: Template vs 3D */}
+            <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5">
+              <button
+                type="button"
+                onClick={() => onTabChange("templates")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all outline-none",
+                  activeTab === "templates"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
               >
-                <span
-                  className="size-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: activePreset.colorHex }}
-                />
-                <span className="truncate max-w-[140px] sm:max-w-[240px]">
-                  {activePreset.title.split(":")[0]} - {activePreset.badge}
-                </span>
-                <ChevronDownIcon className="size-3.5 text-muted-foreground shrink-0" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-80">
-                <DropdownMenuLabel className="text-xs text-muted-foreground uppercase font-mono tracking-wider">
-                  Pilih Preset Draft Web
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {DRAFT_PRESETS.map((preset) => {
-                  const isSelected = preset.id === activePreset.id;
-                  return (
-                    <DropdownMenuItem
-                      key={preset.id}
-                      onClick={() => {
-                        onSelectPreset(preset);
-                        setTheme(preset.recommendedTheme);
-                      }}
-                      className={cn(
-                        "flex flex-col items-start gap-1 p-3 cursor-pointer",
-                        isSelected && "bg-primary/10"
-                      )}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <span className="font-medium text-sm flex items-center gap-2">
-                          <span
-                            className="size-2 rounded-full"
-                            style={{ backgroundColor: preset.colorHex }}
-                          />
-                          {preset.title}
+                <LayersIcon className="size-3.5 text-primary" />
+                <span className="hidden xs:inline">Draft</span> Template
+              </button>
+              <button
+                type="button"
+                onClick={() => onTabChange("3d")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all outline-none",
+                  activeTab === "3d"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <BoxIcon className="size-3.5 text-emerald-500" />
+                <span>Animasi 3D</span>
+                <span className="flex size-1.5 rounded-full bg-emerald-500 animate-ping" />
+              </button>
+            </div>
+
+            {/* Preset Dropdown (Active when tab is 'templates') */}
+            {activeTab === "templates" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      className="gap-2 font-medium text-xs sm:text-sm bg-accent/30 border-primary/30"
+                    />
+                  }
+                >
+                  <span
+                    className="size-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: activePreset.colorHex }}
+                  />
+                  <span className="truncate max-w-[120px] sm:max-w-[200px]">
+                    {activePreset.title.split(":")[0]} - {activePreset.badge}
+                  </span>
+                  <ChevronDownIcon className="size-3.5 text-muted-foreground shrink-0" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-80">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground uppercase font-mono tracking-wider">
+                    Pilih Preset Draft Web
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {DRAFT_PRESETS.map((preset) => {
+                    const isSelected = preset.id === activePreset.id;
+                    return (
+                      <DropdownMenuItem
+                        key={preset.id}
+                        onClick={() => {
+                          onSelectPreset(preset);
+                          setTheme(preset.recommendedTheme);
+                        }}
+                        className={cn(
+                          "flex flex-col items-start gap-1 p-3 cursor-pointer",
+                          isSelected && "bg-primary/10"
+                        )}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-medium text-sm flex items-center gap-2">
+                            <span
+                              className="size-2 rounded-full"
+                              style={{ backgroundColor: preset.colorHex }}
+                            />
+                            {preset.title}
+                          </span>
+                          {isSelected && <CheckIcon className="size-4 text-primary" />}
+                        </div>
+                        <span className="text-xs text-muted-foreground line-clamp-2">
+                          {preset.subtitle}
                         </span>
-                        {isSelected && <CheckIcon className="size-4 text-primary" />}
-                      </div>
-                      <span className="text-xs text-muted-foreground line-clamp-2">
-                        {preset.subtitle}
-                      </span>
-                      <Badge variant="secondary" className="text-[10px] mt-1">
-                        Theme: {preset.recommendedTheme}
-                      </Badge>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                        <Badge variant="secondary" className="text-[10px] mt-1">
+                          Theme: {preset.recommendedTheme}
+                        </Badge>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
-          {/* Center: Viewport Controls (Desktop / Tablet / Mobile) */}
-          <div className="hidden lg:flex items-center rounded-lg border border-border bg-muted/30 p-1 gap-1">
-            <button
-              type="button"
-              onClick={() => onViewportChange("desktop")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                viewportMode === "desktop"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Desktop View (100%)"
-            >
-              <LaptopIcon className="size-3.5" />
-              <span>Desktop</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewportChange("tablet")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                viewportMode === "tablet"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Tablet View (768px)"
-            >
-              <TabletIcon className="size-3.5" />
-              <span>Tablet</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewportChange("mobile")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                viewportMode === "mobile"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Mobile View (375px)"
-            >
-              <SmartphoneIcon className="size-3.5" />
-              <span>Mobile</span>
-            </button>
-          </div>
+          {/* Center: Viewport Controls (Desktop / Tablet / Mobile) - Shown on templates tab */}
+          {activeTab === "templates" && (
+            <div className="hidden lg:flex items-center rounded-lg border border-border bg-muted/30 p-1 gap-1">
+              <button
+                type="button"
+                onClick={() => onViewportChange("desktop")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  viewportMode === "desktop"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Desktop View (100%)"
+              >
+                <LaptopIcon className="size-3.5" />
+                <span>Desktop</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onViewportChange("tablet")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  viewportMode === "tablet"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Tablet View (768px)"
+              >
+                <TabletIcon className="size-3.5" />
+                <span>Tablet</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onViewportChange("mobile")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  viewportMode === "mobile"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Mobile View (375px)"
+              >
+                <SmartphoneIcon className="size-3.5" />
+                <span>Mobile</span>
+              </button>
+            </div>
+          )}
 
           {/* Right: Theme Picker Dropdown & CTA Button */}
           <div className="flex items-center gap-2">
@@ -180,7 +225,7 @@ export function DraftSwitcherBar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="text-xs text-muted-foreground uppercase font-mono tracking-wider">
-                  Ubah Akses Warna (Theme)
+                  Ubah Aksen Warna (Theme)
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {themes.map((t) => (
@@ -218,6 +263,7 @@ export function DraftSwitcherBar({
         open={modalOpen}
         onOpenChange={setModalOpen}
         preset={activePreset}
+        selectedAnimation={selectedAnimation}
       />
     </>
   );
