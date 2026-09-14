@@ -33,7 +33,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "globals": "^16",
-    "typescript": "^5",
+    "typescript": "^7",
     "typescript-eslint": "^8"
   }
 }
