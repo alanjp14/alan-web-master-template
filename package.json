@@ -19,6 +19,6 @@
     "test": "pnpm -r test"
   },
   "devDependencies": {
-    "typescript": "^5"
+    "typescript": "^7"
   }
 }
