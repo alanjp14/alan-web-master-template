@@ -34,8 +34,6 @@ export function ServerRack3D({
     let animationFrameId: number;
     let isVisible = true;
     let time = 0;
-    let mouseX = -9999;
-    let mouseY = -9999;
     let targetTiltX = 0;
     let targetTiltY = 0;
     let currentTiltX = 0;

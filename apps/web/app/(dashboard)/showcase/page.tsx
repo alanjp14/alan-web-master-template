@@ -6,6 +6,7 @@ import {
   DatabaseIcon,
   DollarSignIcon,
   LayoutTemplateIcon,
+  SparklesIcon,
   UsersIcon,
 } from "lucide-react";
 
@@ -160,6 +161,30 @@ export default function ShowcasePage() {
       size="lg"
     >
       <div className="space-y-14">
+        {/* Interactive 3D Playground Promo Banner */}
+        <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/15 via-accent/20 to-primary/5 p-6 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+                <SparklesIcon className="size-3.5" /> Client Presentation Ready
+              </span>
+              <h3 className="font-heading text-lg font-bold text-foreground">
+                Katalog Interaktif 3D & Mikro-Animasi (/preview)
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
+                Akses halaman showcase publik khusus presentasi klien dengan tombol magnetik, kartu bento 3D tilt, canvas geometris realtime, dan slider 3D coverflow.
+              </p>
+            </div>
+            <Link
+              href="/preview"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-md shadow-primary/25 hover:bg-primary/90 transition-colors shrink-0"
+            >
+              <span>Buka Live 3D Playground</span>
+              <ArrowRightIcon className="size-3.5" />
+            </Link>
+          </div>
+        </div>
+
         <section className="space-y-4">
           <SectionHeader
             title="Brand theme & density"

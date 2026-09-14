@@ -1,4 +1,4 @@
-import { LayoutDashboard, LineChart, Palette, Settings, Terminal } from "lucide-react";
+import { LayoutDashboard, LineChart, Palette, Settings, Sparkles, Terminal } from "lucide-react";
 
 import type { MarketingLink, NavItem, NavSection } from "@/types/navigation";
 
@@ -41,6 +41,11 @@ export const mainNavigation: NavSection[] = [
         icon: Palette,
       },
       {
+        title: "Interactive 3D Playground",
+        href: "/preview",
+        icon: Sparkles,
+      },
+      {
         title: "Showcase",
         href: "/showcase",
         icon: Palette,
@@ -76,10 +81,10 @@ export const mobileNavigation: NavItem[] = mainNavigation
  */
 export const marketingNavigation: MarketingLink[] = [
   { label: "Pilihan Draft", href: "/drafts" },
+  { label: "Interactive 3D", href: "/preview" },
   { label: "Layanan IT", href: "/#services" },
   { label: "Portofolio", href: "/#portfolio" },
   { label: "Web Tools IT", href: "/tools" },
   { label: "Harga", href: "/pricing" },
-  { label: "Showcase", href: "/showcase" },
 ];
 

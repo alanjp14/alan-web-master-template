@@ -13,7 +13,13 @@
  */
 
 /** The `data-theme` attribute value written to `<html>`. */
-export type ThemeId = "emerald" | "sapphire" | "amber" | "slate";
+export type ThemeId =
+  | "emerald"
+  | "sapphire"
+  | "amber"
+  | "slate"
+  | "cyberpunk"
+  | "minimalist";
 
 export interface ThemeOption {
   id: ThemeId;
@@ -52,6 +58,18 @@ export const THEMES = [
     label: "Slate",
     description: "High-contrast, near-monochrome, sharp corners — developer tools.",
     swatch: ["#334155", "#94a3b8"],
+  },
+  {
+    id: "cyberpunk",
+    label: "Cyberpunk Neon",
+    description: "Futuristic neon cyan & magenta, glowing accents — web3, gaming & tech.",
+    swatch: ["#00f0ff", "#ff007f"],
+  },
+  {
+    id: "minimalist",
+    label: "Minimalist SaaS",
+    description: "Clean monochrome with electric indigo focus — modern SaaS & AI products.",
+    swatch: ["#4f46e5", "#818cf8"],
   },
 ] as const satisfies readonly ThemeOption[];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   CheckIcon,
   CheckCircleIcon,
@@ -99,6 +100,13 @@ export function DraftSwitcherBar({
                 <span>Animasi 3D</span>
                 <span className="flex size-1.5 rounded-full bg-emerald-500 animate-ping" />
               </button>
+              <Link
+                href="/preview"
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/10 transition-all outline-none"
+              >
+                <SparklesIcon className="size-3.5" />
+                <span className="hidden sm:inline">Playground</span>
+              </Link>
             </div>
 
             {/* Preset Dropdown (Active when tab is 'templates') */}

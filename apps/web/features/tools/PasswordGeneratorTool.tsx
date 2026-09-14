@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check, Copy, KeyRound, RefreshCw, ShieldAlert, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ export function PasswordGeneratorTool() {
   const [includeSymbols, setIncludeSymbols] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  const generatePassword = () => {
+  const generatePassword = useCallback(() => {
     let charset = "";
     if (includeUpper) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     if (includeLower) charset += "abcdefghijklmnopqrstuvwxyz";
@@ -37,11 +37,14 @@ export function PasswordGeneratorTool() {
     }
     setPassword(result);
     setCopied(false);
-  };
+  }, [length, includeUpper, includeLower, includeNumbers, includeSymbols]);
 
   useEffect(() => {
-    generatePassword();
-  }, [length, includeUpper, includeLower, includeNumbers, includeSymbols]);
+    const timer = setTimeout(() => {
+      generatePassword();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [generatePassword]);
 
   const copyToClipboard = () => {
     if (!password) return;
@@ -136,9 +139,7 @@ export function PasswordGeneratorTool() {
           </div>
           <div className="w-full sm:w-48 bg-muted rounded-full h-2 overflow-hidden">
             <div
-              className={`h-full transition-all duration-300 ${
-                entropy >= 75 ? "bg-emerald-500" : entropy >= 50 ? "bg-amber-500" : "bg-destructive"
-              }`}
+              className={`h-full transition-all duration-300 ${strengthColor}`}
               style={{ width: `${Math.min(100, (entropy / 128) * 100)}%` }}
             />
           </div>
